@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 预测市场主表
+model Market {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  category    String   // TECH, FINANCE, SPORTS, ENTERTAINMENT
+  status      String   // ACTIVE, CLOSED, SUCCESSFUL, FAILED
+
+  // 时间字段
+  closeDate   DateTime
+  resolveDate DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // AI 分析字段
+  atypicaPickId   String?
+  atypicaAnalysis String?  @db.Text
+  accuracyScore   Float?
+
+  // 外部数据源
+  externalSource String?
+  externalData   Json?   // 存储完整的 Polymarket 原始数据
+
+  // 统计字段
+  viewCount   Int     @default(0)
+  shareCount  Int     @default(0)
+  poolAmount  Float?
+  poolCurrency String? @default("USD")
+
+  // 关联选项
+  options     Option[]
+
+  @@index([status])
+  @@index([category])
+  @@index([closeDate])
+}
+
+// 预测选项表
+model Option {
+  id           String   @id @default(cuid())
+  marketId     String
+  market       Market   @relation(fields: [marketId], references: [id], onDelete: Cascade)
+
+  text         String
+  externalProb Float?   // 外部市场概率 (0-1)
+  atypicaProb  Float?   // Atypica AI 预测概率 (0-1)
+  isWinner     Boolean  @default(false)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([marketId])
+}

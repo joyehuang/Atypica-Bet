@@ -7,11 +7,43 @@ import { AdminList } from './pages/AdminList';
 import { AdminCreate } from './pages/AdminCreate';
 import { PredictionMarket, PredictionStatus } from './types';
 import { INITIAL_MARKETS } from './constants';
+import {
+  getMarketsFromDatabase,
+  saveMarketToDatabase,
+  saveMarketsToDatabase,
+  deleteMarketFromDatabase,
+  resolveMarketInDatabase,
+} from './services/databaseService';
 
 const App: React.FC = () => {
-  const [markets, setMarkets] = useState<PredictionMarket[]>(INITIAL_MARKETS);
+  const [markets, setMarkets] = useState<PredictionMarket[]>([]);
+  const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'HOME' | 'DETAIL' | 'ADMIN' | 'CREATE'>('HOME');
   const [activeMarketId, setActiveMarketId] = useState<string | null>(null);
+
+  // 从数据库加载市场数据
+  useEffect(() => {
+    const loadMarkets = async () => {
+      try {
+        setLoading(true);
+        const dbMarkets = await getMarketsFromDatabase();
+        if (dbMarkets.length > 0) {
+          setMarkets(dbMarkets);
+        } else {
+          // 如果数据库为空，使用初始数据
+          setMarkets(INITIAL_MARKETS);
+        }
+      } catch (error) {
+        console.error('加载市场数据失败:', error);
+        // 如果 API 不可用，使用初始数据
+        setMarkets(INITIAL_MARKETS);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMarkets();
+  }, []);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -40,36 +72,70 @@ const App: React.FC = () => {
     window.location.hash = `#/market/${id}`;
   };
 
-  const handleDeleteMarket = (id: string) => {
+  const handleDeleteMarket = async (id: string) => {
     if (confirm('确定要删除这个预测市场吗？')) {
-      setMarkets(prev => prev.filter(m => m.id !== id));
+      try {
+        await deleteMarketFromDatabase(id);
+        setMarkets(prev => prev.filter(m => m.id !== id));
+      } catch (error) {
+        console.error('删除市场失败:', error);
+        alert('删除市场失败，请重试');
+      }
     }
   };
 
-  const handleResolveMarket = (id: string, winnerId: string) => {
-    setMarkets(prev => prev.map(m => {
-      if (m.id === id) {
-        const isAtypicaCorrect = m.atypicaPickId === winnerId;
-        return {
-          ...m,
-          status: isAtypicaCorrect ? PredictionStatus.SUCCESSFUL : PredictionStatus.FAILED,
-          options: m.options.map(o => ({ ...o, isWinner: o.id === winnerId })),
-          resolveDate: new Date().toISOString()
-        };
-      }
-      return m;
-    }));
+  const handleResolveMarket = async (id: string, winnerId: string) => {
+    try {
+      await resolveMarketInDatabase(id, winnerId);
+      setMarkets(prev => prev.map(m => {
+        if (m.id === id) {
+          const isAtypicaCorrect = m.atypicaPickId === winnerId;
+          return {
+            ...m,
+            status: isAtypicaCorrect ? PredictionStatus.SUCCESSFUL : PredictionStatus.FAILED,
+            options: m.options.map(o => ({ ...o, isWinner: o.id === winnerId })),
+            resolveDate: new Date().toISOString()
+          };
+        }
+        return m;
+      }));
+    } catch (error) {
+      console.error('结算市场失败:', error);
+      alert('结算市场失败，请重试');
+    }
   };
 
-  const handleSaveMarket = (market: PredictionMarket) => {
-    setMarkets(prev => [market, ...prev]);
-    window.location.hash = '#/admin';
+  const handleSaveMarket = async (market: PredictionMarket) => {
+    try {
+      const savedMarket = await saveMarketToDatabase(market);
+      setMarkets(prev => [savedMarket, ...prev]);
+      window.location.hash = '#/admin';
+    } catch (error) {
+      console.error('保存市场失败:', error);
+      alert('保存市场失败，请检查 API 服务器是否运行');
+    }
   };
 
-  const handleBatchSaveMarkets = (markets: PredictionMarket[]) => {
-    setMarkets(prev => [...markets, ...prev]);
-    window.location.hash = '#/admin';
+  const handleBatchSaveMarkets = async (markets: PredictionMarket[]) => {
+    try {
+      const savedMarkets = await saveMarketsToDatabase(markets);
+      setMarkets(prev => [...savedMarkets, ...prev]);
+      window.location.hash = '#/admin';
+    } catch (error) {
+      console.error('批量保存市场失败:', error);
+      alert('批量保存市场失败，请检查 API 服务器是否运行');
+    }
   };
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-white/60">加载中...</div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
