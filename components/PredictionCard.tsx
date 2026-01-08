@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { PredictionMarket, Category, PredictionStatus } from '../types';
 import { CATEGORY_LABELS, STATUS_LABELS } from '../constants';
 import { AccuracyMeter } from './AccuracyMeter';
-import { Calendar, ArrowRight, Target, Zap, RefreshCw, MessageSquare, Heart, Share2, Clock, DollarSign } from 'lucide-react';
+import { Calendar, ArrowRight, Target, Zap, RefreshCw, MessageSquare, Heart, Share2, Clock, DollarSign, AlertTriangle, Info, Tag } from 'lucide-react';
 
 interface PredictionCardProps {
   market: PredictionMarket;
@@ -59,6 +59,13 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
     }
   };
 
+  const getConfidenceLevel = (probability: number) => {
+    if (probability >= 0.8) return "High";
+    if (probability >= 0.6) return "Medium";
+    if (probability >= 0.4) return "Moderate";
+    return "Low";
+  };
+
   const handleRefresh = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsRefreshing(true);
@@ -87,235 +94,98 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
   return (
     <div
       onClick={() => onClick(market.id)}
-      className={`group cursor-pointer glass-panel spotlight-card rounded-2xl flex flex-col transition-all duration-500 hover:border-white/20 ${featured ? 'md:flex-row md:items-stretch h-auto md:h-64' : ''} ${isNearDeadline ? 'animate-gentle-pulse shadow-[0_0_15px_rgba(251,191,36,0.1)]' : ''}`}
+      className="group cursor-pointer glass-panel spotlight-card rounded-xl transition-all duration-300 hover:border-white/20 p-5"
     >
-      {featured && (
-        <div className="md:w-1/5 bg-white/[0.03] border-r border-white/10 flex flex-col items-center justify-center p-4">
-          <Zap className="w-6 h-6 text-primary mb-2 animate-subtle-pulse" />
-          <span className="text-[9px] font-bold text-primary tracking-widest uppercase">Verified Model</span>
+      {/* 防误解锚点 - Header with AI prediction disclaimer */}
+      <div className="mb-3">
+        <div className="flex items-center justify-between mb-1.5">
+          <div className="flex items-center">
+            <Zap className="w-4 h-4 text-primary mr-1.5" />
+            <span className="text-[12px] font-bold text-primary">Atypica AI Prediction</span>
+          </div>
+          <div className="flex items-center text-[9px] text-white/50 gap-1">
+            <Tag className="w-3 h-3 text-white/40" />
+            <span>{CATEGORY_LABELS[market.category]}</span>
+          </div>
+        </div>
+        <p className="text-[10px] text-muted">Based on simulated agent behavior</p>
+      </div>
+
+      {/* Prediction Question */}
+      <h3 className="text-lg font-semibold text-white leading-snug mb-4 group-hover:text-primary transition-colors">
+        {market.title}
+      </h3>
+
+      {/* Main Prediction Box */}
+      {pickedOption && (
+        <div className="mb-4 bg-white/[0.03] border border-white/10 rounded-xl p-4">
+          <div className="text-[11px] text-white/70 mb-1.5">Atypica predicts</div>
+
+          <div className="flex flex-row justify-between items-start mb-2">
+            <div className="text-lg font-bold text-white">{pickedOption.text}</div>
+            <div className="text-sm text-white/70">
+              Confidence: {getConfidenceLevel(pickedOption.atypicaProb || 0)}
+            </div>
+          </div>
+
+          <div className="text-3xl font-bold text-primary">
+            {pickedOption.atypicaProb !== undefined ?
+              `${Math.round(pickedOption.atypicaProb * 100)}%` :
+              "N/A"}
+          </div>
         </div>
       )}
 
-      <div className="p-5 flex-1 flex flex-col justify-between">
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="tag-atypica">
-                {CATEGORY_LABELS[market.category]}
-              </span>
-              <span className={`tag-atypica ${getStatusColor(market.status)}`}>
-                {isNearDeadline && market.status === PredictionStatus.ACTIVE ? 'Ending Soon' : STATUS_LABELS[market.status]}
-              </span>
-
-              {/* Pool Amount Display */}
-              {formattedPoolAmount && (
-                <span className="tag-atypica bg-white/[0.03] text-white flex items-center gap-1">
-                  <DollarSign className="w-3 h-3" />
-                  {formattedPoolAmount}
-                </span>
-              )}
-            </div>
-
-            {/* Social metrics */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center text-[9px] text-white/50">
-                <MessageSquare className="w-3 h-3 mr-1" />
-                <span>{Math.floor(market.viewCount / 100)}</span>
-              </div>
-              <div className="flex items-center text-[9px] text-white/50">
-                <Heart className="w-3 h-3 mr-1" />
-                <span>{Math.floor(market.shareCount / 2)}</span>
-              </div>
-              <div className="flex items-center text-[9px] text-white/50">
-                <Share2 className="w-3 h-3 mr-1" />
-                <span>{market.shareCount}</span>
-              </div>
-            </div>
-          </div>
-
-          <h3 className="text-[15px] font-semibold text-white leading-snug mb-3 group-hover:text-primary transition-colors">
-            {market.title}
-          </h3>
-
-          {/* Atypica Pick Display - NEW SECTION */}
-          {pickedOption && (
-            <div className="mb-2 border-t border-white/10 pt-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
-                    <Zap className="w-3 h-3 text-primary" />
-                  </div>
-                  <div>
-                    <div className="text-[9px] text-primary font-bold uppercase tracking-wider">Atypica Pick</div>
-                    <div className="text-[13px] font-semibold text-white">
-                      {pickedOption.text}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center">
-                  <div className="flex flex-col items-end">
-                    <div className="text-[9px] text-white/50 font-medium mb-0.5">Probabilities</div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center">
-                        <span className="text-[9px] text-muted mr-1">Market:</span>
-                        <span className="text-[11px] font-medium text-white">{Math.round((pickedOption.externalProb || 0) * 100)}%</span>
-                      </div>
-                      {pickedOption.atypicaProb !== undefined && (
-                        <div className="flex items-center">
-                          <span className="text-[9px] text-primary mr-1">Atypica:</span>
-                          <span className="text-[13px] font-medium text-primary">{Math.round(pickedOption.atypicaProb * 100)}%</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {market.atypicaAnalysis && (
-                <div className="mt-1.5 text-[10px] text-white/70 line-clamp-1">
-                  {market.atypicaAnalysis}
-                </div>
-              )}
-            </div>
-          )}
+      {/* How Atypica sees other outcomes - 关键语义转折 */}
+      <div className="mb-4">
+        <div className="text-[13px] font-semibold uppercase tracking-wide text-white/80 mb-2">
+          How Atypica sees other outcomes
         </div>
 
         <div className="space-y-2">
-          {/* Polymarket Yes/No display */}
-          {isYesNoOption && (
-            <div className="mb-2">
-              {/* Simple Yes/No Buttons */}
-              <div className="flex space-x-2">
-                {market.options.map((option) => {
-                  const isYes = option.text.toLowerCase() === 'yes';
-                  const marketPercentage = Math.round((option.externalProb || 0) * 100);
-                  const atypicaPercentage = option.atypicaProb !== undefined
-                    ? Math.round(option.atypicaProb * 100)
-                    : null;
-                  const hasAtypicaPrediction = atypicaPercentage !== null;
-
-                  return (
-                    <div
-                      key={option.id}
-                      className={`flex-1 h-auto rounded-lg p-2 cursor-pointer transition-all
-                        ${isYes
-                          ? 'bg-green-100/10 border border-green-500/20 hover:bg-green-100/15'
-                          : 'bg-red-100/10 border border-red-500/20 hover:bg-red-100/15'}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className={`font-medium text-sm ${isYes ? 'text-green-400' : 'text-red-400'}`}>
-                          {option.text}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-end gap-3">
-                        <div className="flex items-center">
-                          <span className="text-[9px] text-muted mr-1">Market:</span>
-                          <span className="text-[13px] font-medium text-white">
-                            {marketPercentage}%
-                          </span>
-                        </div>
-                        {hasAtypicaPrediction && (
-                          <div className="flex items-center">
-                            <span className="text-[8px] text-primary mr-1">Atypica:</span>
-                            <span className="text-[10px] font-medium text-primary">
-                              {atypicaPercentage}%
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Volume Information */}
-              <div className="flex justify-end mt-1.5">
-                <span className="text-xs text-white/50 font-medium">
-                  ${(market.poolAmount || 0).toLocaleString()} Vol.
-                </span>
-              </div>
+          {market.options.filter(option => option.id !== market.atypicaPickId).map((option) => (
+            <div key={option.id} className="flex items-center justify-between">
+              <span className="text-sm text-white">{option.text}</span>
+              <span className="text-sm font-medium text-white">
+                {option.atypicaProb !== undefined ?
+                  `${Math.round(option.atypicaProb * 100)}%` :
+                  "N/A"}
+              </span>
             </div>
-          )}
+          ))}
+        </div>
+      </div>
 
-          {/* Standard prediction choice */}
-          {!isYesNoOption && (
-            <div className="bg-white/[0.02] border border-white/5 rounded-xl p-2">
-              <div className="space-y-1">
-                {market.options.map((option) => {
-                  const isAtypicaPick = option.id === market.atypicaPickId;
-                  const marketPercentage = Math.round((option.externalProb || 0) * 100);
-                  const atypicaPercentage = option.atypicaProb !== undefined
-                    ? Math.round(option.atypicaProb * 100)
-                    : null;
-                  const hasAtypicaPrediction = atypicaPercentage !== null;
+      {/* Divider */}
+      <div className="h-px bg-white/10 my-4"></div>
 
-                  return (
-                    <div
-                      key={option.id}
-                      className={`py-1 px-2 rounded ${
-                        isAtypicaPick ? 'bg-primary/10 border border-primary/20' : 'hover:bg-white/5'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className={`text-sm font-medium ${isAtypicaPick ? 'text-primary' : 'text-white'}`}>
-                          {option.text}
-                        </span>
+      {/* Market context - 明确是"背景" */}
+      <div className="mb-4">
+        <div className="text-[13px] font-semibold uppercase tracking-wide text-white/80 mb-2">
+          Market context (Polymarket)
+        </div>
 
-                        <div className="flex items-center gap-3">
-                          {hasAtypicaPrediction && (
-                            <div className="flex items-center">
-                              <span className="text-[8px] mr-1 text-primary">Atypica:</span>
-                              <span className="text-[10px] font-medium text-primary">{atypicaPercentage}%</span>
-                            </div>
-                          )}
-                          <div className="flex items-center">
-                            <span className="text-[9px] mr-1 text-muted">Market:</span>
-                            <span className="text-[13px] font-medium text-white">{marketPercentage}%</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Volume Information */}
-              <div className="flex justify-end mt-2 pt-1.5 border-t border-white/10">
-                <span className="text-xs text-white/50 font-medium">
-                  ${(market.poolAmount || 0).toLocaleString()} Vol.
-                </span>
-              </div>
+        <div className="space-y-2">
+          {market.options.map((option) => (
+            <div key={option.id} className="flex items-center justify-between">
+              <span className="text-sm text-white">{option.text}</span>
+              <span className="text-sm font-medium text-white">
+                {Math.round((option.externalProb || 0) * 100)}%
+              </span>
             </div>
-          )}
+          ))}
+        </div>
+      </div>
 
-          <div className="flex items-center justify-between text-[10px] font-medium pt-1">
-            <div className="flex items-center gap-3">
-              {/* Countdown display */}
-              <div className="flex items-center text-muted">
-                <Clock className={`w-3 h-3 mr-1 ${isNearDeadline ? 'text-amber-400' : 'opacity-60'}`} />
-                <span className={isNearDeadline ? 'text-amber-400 font-bold' : ''}>
-                  {countdown}
-                </span>
-              </div>
+      {/* Footer */}
+      <div className="flex items-center justify-between text-[10px] font-medium pt-2">
+        <div className="text-muted flex items-center">
+          <RefreshCw className={`w-3 h-3 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <span>Updated {isRefreshing ? "now" : lastUpdated}</span>
+        </div>
 
-              {/* Last updated display with refresh button */}
-              <div className="flex items-center text-muted">
-                <button
-                  onClick={handleRefresh}
-                  className="flex items-center hover:text-white transition-colors"
-                >
-                  <RefreshCw className={`w-3 h-3 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  <span>{isRefreshing ? "Refreshing..." : lastUpdated}</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center text-white/50 group-hover:text-primary transition-all gap-1 font-bold uppercase tracking-widest text-[9px]">
-              View Report <ArrowRight className="w-3 h-3 translate-x-1 group-hover:translate-x-2 transition-transform" />
-            </div>
-          </div>
+        <div className="flex items-center text-white/50 group-hover:text-primary transition-all gap-1 font-bold">
+          View analysis <ArrowRight className="w-3 h-3 translate-x-1 group-hover:translate-x-2 transition-transform" />
         </div>
       </div>
     </div>
