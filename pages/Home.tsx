@@ -8,12 +8,12 @@ import { ChevronDown, SlidersHorizontal, CheckCircle2, Activity, Zap, ChevronRig
 
 interface HomeProps {
   onMarketClick: (id: string) => void;
+  markets: PredictionMarket[];
 }
 
-export const Home: React.FC<HomeProps> = ({ onMarketClick }) => {
+export const Home: React.FC<HomeProps> = ({ onMarketClick, markets }) => {
   const [activeCategory, setActiveCategory] = useState<Category | 'ALL'>('ALL');
   const [activeStatus, setActiveStatus] = useState<PredictionStatus | 'ALL'>('ALL');
-  const [markets] = useState<PredictionMarket[]>(INITIAL_MARKETS);
 
   const filteredMarkets = useMemo(() => {
     return markets.filter(m => {

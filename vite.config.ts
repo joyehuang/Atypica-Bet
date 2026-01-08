@@ -26,12 +26,23 @@ export default defineConfig(({ mode }) => {
       root: __dirname,
       // 明确指定主入口文件
       appType: 'spa',
-      // 配置服务器并允许不严格的文件系统访问
+      // 配置服务器
       server: {
         port: 3000,
         host: '0.0.0.0',
         fs: {
           strict: false
+        },
+        proxy: {
+          '/api/polymarket': {
+            target: 'https://gamma-api.polymarket.com',
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/api\/polymarket/, ''),
+            secure: true,
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+          }
         }
       }
     };

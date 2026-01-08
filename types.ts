@@ -41,3 +41,48 @@ export interface PredictionMarket {
   poolAmount?: number; // 池子总金额
   poolCurrency?: string; // 货币类型，例如 "USD"
 }
+
+// Polymarket API 响应类型
+export interface PolymarketTag {
+  id: string;
+  label: string;
+  slug: string;
+}
+
+export interface PolymarketSubMarket {
+  id: string;
+  question: string;
+  slug: string;
+  startDate: string;
+  endDate: string;
+  image: string;
+  icon: string;
+  description: string;
+  outcomes: string;  // JSON string: "[\"Yes\", \"No\"]"
+  outcomePrices: string;  // JSON string: "[\"0.45\", \"0.55\"]"
+  volume: string;
+  active: boolean;
+  closed: boolean;
+  bestBid?: number;
+  bestAsk?: number;
+  lastTradePrice?: number;
+}
+
+export interface PolymarketEventGroup {
+  id: string;
+  title: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  image: string;
+  icon: string;
+  active: boolean;
+  closed: boolean;
+  archived: boolean;
+  new: boolean;
+  featured: boolean;
+  restricted: boolean;
+  volume: number;
+  markets: PolymarketSubMarket[];
+  tags: PolymarketTag[];
+}

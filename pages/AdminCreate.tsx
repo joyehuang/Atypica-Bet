@@ -2,14 +2,21 @@
 import React, { useState } from 'react';
 import { Category, PredictionOption, PredictionMarket, PredictionStatus } from '../types';
 import { generatePredictionAnalysis, parseAnalysis } from '../services/geminiService';
-import { ChevronLeft, Plus, X, Sparkles, Loader2, Save } from 'lucide-react';
+import { ChevronLeft, Plus, X, Sparkles, Loader2, Save, Download, Search } from 'lucide-react';
+import {
+  fetchMarketBySlug,
+  convertEventGroupToMarkets,
+  extractSlugFromUrl
+} from '../services/polymarketService';
+import type { PolymarketEventGroup } from '../types';
 
 interface AdminCreateProps {
   onBack: () => void;
   onSave: (market: PredictionMarket) => void;
+  onBatchSave?: (markets: PredictionMarket[]) => void;
 }
 
-export const AdminCreate: React.FC<AdminCreateProps> = ({ onBack, onSave }) => {
+export const AdminCreate: React.FC<AdminCreateProps> = ({ onBack, onSave, onBatchSave }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -18,6 +25,15 @@ export const AdminCreate: React.FC<AdminCreateProps> = ({ onBack, onSave }) => {
     closeDate: '',
     options: [{ text: '', externalProb: 0.5 }, { text: '', externalProb: 0.5 }]
   });
+
+  // Import mode state
+  type CreateMode = 'manual' | 'import';
+  const [mode, setMode] = useState<CreateMode>('manual');
+  const [importLoading, setImportLoading] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [slugInput, setSlugInput] = useState('');
+  const [eventGroup, setEventGroup] = useState<PolymarketEventGroup | null>(null);
+  const [selectedMarkets, setSelectedMarkets] = useState<Set<string>>(new Set());
 
   const handleAddOption = () => {
     setFormData({ ...formData, options: [...formData.options, { text: '', externalProb: 0 }] });
@@ -88,38 +104,133 @@ export const AdminCreate: React.FC<AdminCreateProps> = ({ onBack, onSave }) => {
     setLoading(false);
   };
 
+  // Import mode handlers
+  const handleFetchPolymarket = async () => {
+    if (!slugInput.trim()) {
+      setImportError('请输入 Polymarket Event Slug 或 URL');
+      return;
+    }
+
+    setImportLoading(true);
+    setImportError(null);
+    setEventGroup(null);
+
+    try {
+      const slug = extractSlugFromUrl(slugInput);
+      const data = await fetchMarketBySlug(slug);
+
+      if (!data.markets || data.markets.length === 0) {
+        throw new Error('该事件没有可用的子市场');
+      }
+
+      setEventGroup(data);
+
+      const activeIds = data.markets.filter(m => m.active).map(m => m.id);
+      setSelectedMarkets(new Set(activeIds));
+
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : '获取失败');
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  const handleToggleMarket = (marketId: string) => {
+    setSelectedMarkets(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(marketId)) {
+        newSet.delete(marketId);
+      } else {
+        newSet.add(marketId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleToggleAll = () => {
+    if (selectedMarkets.size === eventGroup?.markets.length) {
+      setSelectedMarkets(new Set());
+    } else {
+      setSelectedMarkets(new Set(eventGroup?.markets.map(m => m.id)));
+    }
+  };
+
+  const handleBatchImport = () => {
+    if (!eventGroup || selectedMarkets.size === 0) {
+      setImportError('请至少选择一个市场');
+      return;
+    }
+
+    const convertedMarkets = convertEventGroupToMarkets(eventGroup, selectedMarkets);
+
+    if (onBatchSave) {
+      onBatchSave(convertedMarkets);
+    } else {
+      convertedMarkets.forEach(market => onSave(market));
+    }
+
+    onBack();
+  };
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
-      <button 
+      <button
         onClick={onBack}
-        className="flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-8 transition-colors font-medium"
+        className="flex items-center gap-2 text-white/60 hover:text-white mb-8 transition-colors font-medium"
       >
         <ChevronLeft className="w-4 h-4" />
         返回列表
       </button>
 
-      <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
-        <h1 className="text-2xl font-black text-slate-800 mb-8">创建新预测市场</h1>
-        
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="glass-panel rounded-2xl p-8">
+        <h1 className="text-2xl font-black text-white mb-8">创建新预测市场</h1>
+
+        {/* Tab 切换 */}
+        <div className="flex gap-2 mb-8 border-b border-white/10">
+          <button
+            onClick={() => setMode('manual')}
+            className={`px-6 py-3 font-bold transition-all ${
+              mode === 'manual'
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-white/50 hover:text-white/80'
+            }`}
+          >
+            手动创建
+          </button>
+          <button
+            onClick={() => setMode('import')}
+            className={`px-6 py-3 font-bold transition-all flex items-center gap-2 ${
+              mode === 'import'
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-white/50 hover:text-white/80'
+            }`}
+          >
+            <Download className="w-4 h-4" />
+            从 Polymarket 导入
+          </button>
+        </div>
+
+        {/* 手动创建模式 */}
+        {mode === 'manual' && (
+          <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700">预测标题</label>
-            <input 
+            <label className="text-sm font-bold text-white/80">预测标题</label>
+            <input
               required
               placeholder="例如: 2026年最佳AI模型公司是？"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               value={formData.title}
               onChange={e => setFormData({ ...formData, title: e.target.value })}
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700">详细描述</label>
-            <textarea 
+            <label className="text-sm font-bold text-white/80">详细描述</label>
+            <textarea
               required
               rows={4}
               placeholder="提供关于该预测话题的背景信息..."
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
               value={formData.description}
               onChange={e => setFormData({ ...formData, description: e.target.value })}
             />
@@ -127,21 +238,21 @@ export const AdminCreate: React.FC<AdminCreateProps> = ({ onBack, onSave }) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">分类</label>
-              <select 
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none"
+              <label className="text-sm font-bold text-white/80">分类</label>
+              <select
+                className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
                 value={formData.category}
                 onChange={e => setFormData({ ...formData, category: e.target.value as Category })}
               >
-                {Object.entries(Category).map(([key, val]) => <option key={val} value={val}>{val}</option>)}
+                {Object.entries(Category).map(([key, val]) => <option key={val} value={val} className="bg-slate-900">{val}</option>)}
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">截止日期</label>
-              <input 
+              <label className="text-sm font-bold text-white/80">截止日期</label>
+              <input
                 required
                 type="date"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
                 value={formData.closeDate}
                 onChange={e => setFormData({ ...formData, closeDate: e.target.value })}
               />
@@ -150,41 +261,41 @@ export const AdminCreate: React.FC<AdminCreateProps> = ({ onBack, onSave }) => {
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-bold text-slate-700">预测选项与外部概率</label>
-              <button 
+              <label className="text-sm font-bold text-white/80">预测选项与外部概率</label>
+              <button
                 type="button"
                 onClick={handleAddOption}
-                className="text-xs font-bold text-primary hover:text-secondary flex items-center gap-1"
+                className="text-xs font-bold text-primary hover:text-primary/80 flex items-center gap-1"
               >
                 <Plus className="w-3 h-3" /> 添加选项
               </button>
             </div>
-            
+
             <div className="space-y-3">
               {formData.options.map((opt, idx) => (
                 <div key={idx} className="flex gap-3 items-center">
-                  <input 
+                  <input
                     required
                     placeholder={`选项 ${idx + 1}`}
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none"
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
                     value={opt.text}
                     onChange={e => handleOptionChange(idx, 'text', e.target.value)}
                   />
                   <div className="w-24 relative">
-                    <input 
+                    <input
                       type="number"
                       step="0.01"
                       min="0"
                       max="1"
                       placeholder="概率"
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none pr-8"
+                      className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary/20 pr-8"
                       value={opt.externalProb}
                       onChange={e => handleOptionChange(idx, 'externalProb', parseFloat(e.target.value))}
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">%</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-white/40 font-bold">%</span>
                   </div>
                   {formData.options.length > 2 && (
-                    <button type="button" onClick={() => handleRemoveOption(idx)} className="p-2 text-slate-300 hover:text-danger">
+                    <button type="button" onClick={() => handleRemoveOption(idx)} className="p-2 text-white/30 hover:text-red-400">
                       <X className="w-5 h-5" />
                     </button>
                   )}
@@ -193,7 +304,7 @@ export const AdminCreate: React.FC<AdminCreateProps> = ({ onBack, onSave }) => {
             </div>
           </div>
 
-          <button 
+          <button
             type="submit"
             disabled={loading}
             className="w-full bg-slate-900 hover:bg-black text-white font-black py-4 rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
@@ -211,6 +322,149 @@ export const AdminCreate: React.FC<AdminCreateProps> = ({ onBack, onSave }) => {
             )}
           </button>
         </form>
+        )}
+
+        {/* Polymarket 导入模式 */}
+        {mode === 'import' && (
+          <div className="space-y-6">
+            {/* Slug 输入 */}
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-white/80">
+                Polymarket Event Slug 或 URL
+              </label>
+              <div className="flex gap-3">
+                <input
+                  placeholder="例如: super-bowl-champion-2026"
+                  className="flex-1 px-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  value={slugInput}
+                  onChange={e => setSlugInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleFetchPolymarket()}
+                />
+                <button
+                  type="button"
+                  onClick={handleFetchPolymarket}
+                  disabled={importLoading}
+                  className="px-6 py-3 bg-slate-900 hover:bg-black text-white font-bold rounded-xl flex items-center gap-2 transition-all disabled:opacity-50"
+                >
+                  {importLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Search className="w-5 h-5" />
+                  )}
+                  获取
+                </button>
+              </div>
+            </div>
+
+            {/* 错误提示 */}
+            {importError && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                <p className="text-sm text-red-700 font-medium">{importError}</p>
+              </div>
+            )}
+
+            {/* Event Group 信息和市场选择 */}
+            {eventGroup && (
+              <div className="space-y-6">
+                {/* Event 信息卡片 */}
+                <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-3">
+                  <div className="flex items-start gap-4">
+                    {eventGroup.image && (
+                      <img
+                        src={eventGroup.image}
+                        alt={eventGroup.title}
+                        className="w-16 h-16 rounded-lg object-cover"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <h2 className="text-lg font-black text-white">
+                        {eventGroup.title}
+                      </h2>
+                      <p className="text-sm text-white/70 mt-1">
+                        {eventGroup.description}
+                      </p>
+                      <div className="flex gap-4 mt-3 text-xs text-white/50">
+                        <span>总市场数: {eventGroup.markets.length}</span>
+                        <span>活跃: {eventGroup.markets.filter(m => m.active).length}</span>
+                        <span>总交易量: ${eventGroup.volume.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 市场选择列表 */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-bold text-white/80">
+                      选择要导入的市场 ({selectedMarkets.size} / {eventGroup.markets.length})
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleToggleAll}
+                      className="text-xs font-bold text-primary hover:text-primary/80"
+                    >
+                      {selectedMarkets.size === eventGroup.markets.length ? '全不选' : '全选'}
+                    </button>
+                  </div>
+
+                  <div className="max-h-96 overflow-y-auto space-y-2 border border-white/10 rounded-xl p-3 bg-black/20">
+                    {eventGroup.markets.map(market => {
+                      const isSelected = selectedMarkets.has(market.id);
+                      const probability = market.bestBid && market.bestAsk
+                        ? ((market.bestBid + market.bestAsk) / 2 * 100).toFixed(1)
+                        : 'N/A';
+
+                      return (
+                        <label
+                          key={market.id}
+                          className={`flex items-start gap-3 p-4 rounded-lg cursor-pointer transition-all ${
+                            isSelected
+                              ? 'bg-primary/10 border-2 border-primary'
+                              : 'bg-white/5 border border-white/10 hover:border-white/20'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleToggleMarket(market.id)}
+                            className="mt-1 w-4 h-4 text-primary rounded focus:ring-primary"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-white">
+                                {market.question}
+                              </span>
+                              {!market.active && (
+                                <span className="px-2 py-0.5 bg-white/10 text-white/60 text-xs font-bold rounded">
+                                  已关闭
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex gap-4 mt-2 text-xs text-white/50">
+                              <span>概率: {probability}%</span>
+                              <span>交易量: ${parseFloat(market.volume).toLocaleString()}</span>
+                            </div>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 导入按钮 */}
+                <button
+                  type="button"
+                  onClick={handleBatchImport}
+                  disabled={selectedMarkets.size === 0}
+                  className="w-full bg-slate-900 hover:bg-black text-white font-black py-4 rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Save className="w-5 h-5" />
+                  导入选中的 {selectedMarkets.size} 个市场
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
