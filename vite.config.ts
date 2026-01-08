@@ -8,6 +8,17 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
+        proxy: {
+          '/api/polymarket': {
+            target: 'https://gamma-api.polymarket.com',
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/api\/polymarket/, ''),
+            secure: true,
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+          }
+        }
       },
       plugins: [react()],
       define: {

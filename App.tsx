@@ -66,9 +66,14 @@ const App: React.FC = () => {
     window.location.hash = '#/admin';
   };
 
+  const handleBatchSaveMarkets = (markets: PredictionMarket[]) => {
+    setMarkets(prev => [...markets, ...prev]);
+    window.location.hash = '#/admin';
+  };
+
   return (
     <Layout>
-      {view === 'HOME' && <Home onMarketClick={handleMarketClick} />}
+      {view === 'HOME' && <Home onMarketClick={handleMarketClick} markets={markets} />}
       {view === 'DETAIL' && activeMarketId && (
         <MarketDetail 
           marketId={activeMarketId} 
@@ -85,9 +90,10 @@ const App: React.FC = () => {
         />
       )}
       {view === 'CREATE' && (
-        <AdminCreate 
-          onBack={() => window.location.hash = '#/admin'} 
+        <AdminCreate
+          onBack={() => window.location.hash = '#/admin'}
           onSave={handleSaveMarket}
+          onBatchSave={handleBatchSaveMarkets}
         />
       )}
     </Layout>
