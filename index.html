@@ -34,9 +34,21 @@
             }
         }
     </script>
+    <script type="importmap">
+    {
+      "imports": {
+        "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+        "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+        "recharts": "https://esm.sh/recharts@^3.6.0",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "react/": "https://esm.sh/react@^19.2.3/",
+        "react": "https://esm.sh/react@^19.2.3"
+      }
+    }
+    </script>
     <style>
-        body { 
-            background-color: #000000; 
+        body {
+            background-color: #000000;
             color: #ffffff;
             -webkit-font-smoothing: antialiased;
             letter-spacing: -0.01em;
@@ -188,24 +200,15 @@
           animation: spin 0.8s linear infinite;
         }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
-    "recharts": "https://esm.sh/recharts@^3.6.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3"
-  }
-}
-</script>
 </head>
 <body>
     <div class="bg-mesh"></div>
     <div id="root"></div>
-    <!-- 确保正确加载入口文件 -->
+
+    <!-- 使用主入口文件 - 使用绝对路径 -->
     <script type="module" src="/index.tsx"></script>
+
+    <!-- 添加鼠标跟随效果脚本 -->
     <script>
         document.addEventListener('mousemove', e => {
             const cards = document.querySelectorAll('.spotlight-card');
