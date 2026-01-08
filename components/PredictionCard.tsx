@@ -139,51 +139,72 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
 
           {/* Atypica Pick Display - NEW SECTION */}
           {pickedOption && (
-            <div className="mb-4 border-t border-white/10 pt-3">
+            <div className="mb-2 border-t border-white/10 pt-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
                     <Zap className="w-3 h-3 text-primary" />
                   </div>
                   <div>
-                    <div className="text-[10px] text-primary font-bold uppercase tracking-wider">Atypica Pick</div>
-                    <div className="text-[13px] font-medium text-white">{pickedOption.text}</div>
+                    <div className="text-[9px] text-primary font-bold uppercase tracking-wider">Atypica Pick</div>
+                    <div className="text-[13px] font-semibold text-white flex items-center">
+                      {pickedOption.text}
+                      {pickedOption.atypicaProb && (
+                        <span className="ml-1.5 text-[11px] text-primary">
+                          ({Math.round((pickedOption.atypicaProb) * 100)}%)
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 {market.accuracyScore && (
-                  <div className="flex items-center">
-                    <AccuracyMeter value={market.accuracyScore} size="sm" showLabel={false} />
-                    <span className="ml-1.5 text-[10px] text-primary">
-                      {Math.round(market.accuracyScore * 100)}% confidence
-                    </span>
+                  <div className="flex flex-col items-end">
+                    <div className="text-[9px] text-primary font-bold uppercase tracking-wider mb-0.5">Model Confidence</div>
+                    <div className="flex items-center">
+                      <AccuracyMeter value={market.accuracyScore} size="xs" showLabel={false} />
+                      <span className="ml-1 text-[10px] text-white">
+                        {Math.round(market.accuracyScore * 100)}%
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>
+
+              {market.atypicaAnalysis && (
+                <div className="mt-1.5 text-[10px] text-white/70 line-clamp-1">
+                  {market.atypicaAnalysis}
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2">
           {/* Polymarket Yes/No display */}
           {isYesNoOption && (
-            <div className="mb-4">
+            <div className="mb-2">
               {/* Simple Yes/No Buttons */}
               <div className="flex space-x-2">
                 {market.options.map((option) => {
                   const isYes = option.text.toLowerCase() === 'yes';
                   const marketPercentage = Math.round((option.externalProb || 0) * 100);
 
+                  // 对于champions league这类市场，确定显示方式
+                  const buttonLabel = isYesNoOption
+                    ? option.text
+                    : `${option.text} - ${isYes ? 'Yes' : 'No'}`;
+
                   return (
                     <div
                       key={option.id}
-                      className={`flex-1 h-14 rounded-lg flex items-center justify-between px-4
+                      className={`flex-1 h-10 rounded-lg flex items-center justify-between px-4 cursor-pointer transition-all
                         ${isYes
-                          ? 'bg-green-100/10 border border-green-500/20'
-                          : 'bg-red-100/10 border border-red-500/20'}`}
+                          ? 'bg-green-100/10 border border-green-500/20 hover:bg-green-100/15'
+                          : 'bg-red-100/10 border border-red-500/20 hover:bg-red-100/15'}`}
                     >
                       <div className="flex items-center">
                         <span className={`font-medium text-sm ${isYes ? 'text-green-400' : 'text-red-400'}`}>
-                          {option.text}
+                          {buttonLabel}
                         </span>
                       </div>
 
@@ -196,7 +217,7 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
               </div>
 
               {/* Volume Information */}
-              <div className="flex justify-end mt-2">
+              <div className="flex justify-end mt-1.5">
                 <span className="text-xs text-white/50 font-medium">
                   ${(market.poolAmount || 0).toLocaleString()} Vol.
                 </span>
@@ -206,8 +227,8 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
 
           {/* Standard prediction choice */}
           {!isYesNoOption && (
-            <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3">
-              <div className="flex items-center justify-between mb-2">
+            <div className="bg-white/[0.02] border border-white/5 rounded-xl p-2.5">
+              <div className="flex items-center justify-between mb-1.5">
                 <div className="text-[9px] text-muted font-bold uppercase tracking-wider">Market Options</div>
                 <div className="text-[9px] text-muted font-bold uppercase tracking-wider">Probability</div>
               </div>
@@ -236,7 +257,7 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
               </div>
 
               {/* Volume Information */}
-              <div className="flex justify-end mt-3 pt-2 border-t border-white/10">
+              <div className="flex justify-end mt-2 pt-1.5 border-t border-white/10">
                 <span className="text-xs text-white/50 font-medium">
                   ${(market.poolAmount || 0).toLocaleString()} Vol.
                 </span>

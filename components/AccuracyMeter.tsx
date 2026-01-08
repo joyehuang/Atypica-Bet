@@ -3,7 +3,7 @@ import React from 'react';
 
 interface AccuracyMeterProps {
   value: number; // 0-1
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   showLabel?: boolean;
   marketPercentage?: number; // Optional market percentage to show dual visualization
   showDualRing?: boolean; // Whether to show both market and atypica rings
@@ -30,6 +30,7 @@ export const AccuracyMeter: React.FC<AccuracyMeterProps> = ({
   const marketColor = 'rgba(255,255,255,0.5)';
 
   const sizeMetrics = {
+    xs: { w: 'w-6', h: 'h-6', stroke: 1.5, radius: 12, inner: 8, textMain: 'text-[8px]', textSecondary: 'text-[5px]' },
     sm: { w: 'w-10', h: 'h-10', stroke: 2, radius: 18, inner: 14, textMain: 'text-[9px]', textSecondary: 'text-[6px]' },
     md: { w: 'w-16', h: 'h-16', stroke: 3, radius: 28, inner: 23, textMain: 'text-sm', textSecondary: 'text-[8px]' },
     lg: { w: 'w-24', h: 'h-24', stroke: 4, radius: 44, inner: 38, textMain: 'text-xl', textSecondary: 'text-xs' }
