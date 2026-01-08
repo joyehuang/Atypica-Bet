@@ -1,9 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PredictionMarket, Category, PredictionStatus } from '../types';
 import { CATEGORY_LABELS, STATUS_LABELS } from '../constants';
 import { AccuracyMeter } from '../components/AccuracyMeter';
-import { ChevronLeft, Share2, Target, Activity, ShieldCheck, Copy, Twitter, Linkedin, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  ChevronLeft, Share2, Target, Activity, ShieldCheck, Copy,
+  Twitter, Linkedin, Check, ChevronDown, ChevronUp, Clock,
+  RefreshCw, MessageSquare, Heart
+} from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface MarketDetailProps {
@@ -16,13 +20,53 @@ export const MarketDetail: React.FC<MarketDetailProps> = ({ marketId, markets, o
   const market = markets.find(m => m.id === marketId);
   const [expandedSection, setExpandedSection] = useState<string | null>('overview');
   const [copied, setCopied] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string>("1 min ago");
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [countdown, setCountdown] = useState<string>("");
+  const [isNearDeadline, setIsNearDeadline] = useState<boolean>(false);
 
   if (!market) return <div className="p-32 text-center text-muted uppercase tracking-widest text-[10px]">Matrix node disconnected.</div>;
+
+  // Calculate time remaining until close date
+  useEffect(() => {
+    if (market.status !== PredictionStatus.ACTIVE) return;
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const closeDate = new Date(market.closeDate);
+      const timeRemaining = closeDate.getTime() - now.getTime();
+
+      // Check if within 48 hours of deadline
+      const isNear = timeRemaining < 48 * 60 * 60 * 1000;
+      setIsNearDeadline(isNear);
+
+      if (timeRemaining <= 0) {
+        setCountdown("Ended");
+        return;
+      }
+
+      const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+
+      if (days > 0) {
+        setCountdown(`${days}d ${hours}h`);
+      } else {
+        setCountdown(`${hours}h ${minutes}m`);
+      }
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 60000);
+    return () => clearInterval(interval);
+  }, [market.closeDate, market.status]);
 
   const data = market.options.map(opt => ({
     name: opt.text,
     external: Math.round((opt.externalProb || 0) * 100),
     atypica: Math.round((opt.atypicaProb || 0) * 100),
+    id: opt.id,
+    isAtypicaPick: opt.id === market.atypicaPickId
   }));
 
   const handleCopyLink = () => {
@@ -31,12 +75,26 @@ export const MarketDetail: React.FC<MarketDetailProps> = ({ marketId, markets, o
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    // Simulate refresh - in a real implementation, this would fetch updated data
+    setTimeout(() => {
+      setIsRefreshing(false);
+      setLastUpdated("Just now");
+    }, 800);
+  };
+
   const pickedOption = market.options.find(o => o.id === market.atypicaPickId);
+
+  // Check if this is a Yes/No prediction (Polymarket style)
+  const isYesNoOption = market.options.length === 2 &&
+    (market.options[0].text.toLowerCase() === "yes" || market.options[0].text.toLowerCase() === "no") &&
+    (market.options[1].text.toLowerCase() === "yes" || market.options[1].text.toLowerCase() === "no");
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-20">
       {/* Intelligence Breadcrumbs */}
-      <button 
+      <button
         onClick={onBack}
         className="group flex items-center gap-2 text-muted hover:text-white transition-colors font-bold text-[10px] uppercase tracking-[0.2em] mb-12"
       >
@@ -48,18 +106,62 @@ export const MarketDetail: React.FC<MarketDetailProps> = ({ marketId, markets, o
         {/* Intelligence Content */}
         <div className="lg:col-span-8 space-y-12">
           <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <span className="tag-atypica">{CATEGORY_LABELS[market.category]}</span>
-              <span className={`tag-atypica ${market.status === PredictionStatus.SUCCESSFUL ? 'text-primary' : 'text-white'}`}>
-                {STATUS_LABELS[market.status]}
-              </span>
+            <div className="flex flex-wrap items-center justify-between">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="tag-atypica">{CATEGORY_LABELS[market.category]}</span>
+                <span className={`tag-atypica ${market.status === PredictionStatus.ACTIVE && isNearDeadline ? 'text-amber-400 border-amber-500/30 bg-amber-500/5' : market.status === PredictionStatus.SUCCESSFUL ? 'text-primary' : 'text-white'}`}>
+                  {market.status === PredictionStatus.ACTIVE && isNearDeadline ? 'Ending Soon' : STATUS_LABELS[market.status]}
+                </span>
+              </div>
+
+              <div className="flex gap-3 mb-3">
+                <div className="flex items-center gap-3">
+                  {/* Countdown display */}
+                  {market.status === PredictionStatus.ACTIVE && (
+                    <div className="flex items-center bg-white/[0.03] px-3 py-1.5 rounded-full">
+                      <Clock className={`w-3.5 h-3.5 mr-2 ${isNearDeadline ? 'text-amber-400' : 'text-muted'}`} />
+                      <span className={`text-[10px] font-bold ${isNearDeadline ? 'text-amber-400' : 'text-white'}`}>
+                        {countdown}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Last updated with refresh button */}
+                  <div className="flex items-center bg-white/[0.03] px-3 py-1.5 rounded-full">
+                    <button
+                      onClick={handleRefresh}
+                      className="flex items-center hover:text-white transition-colors"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 mr-2 text-muted ${isRefreshing ? 'animate-spin' : ''}`} />
+                      <span className="text-[10px] font-bold text-white">{isRefreshing ? "Refreshing..." : `Updated ${lastUpdated}`}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
+
             <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter leading-[1.1] text-header">
               {market.title}
             </h1>
             <p className="text-muted text-xl font-medium leading-relaxed">
               {market.description}
             </p>
+
+            {/* Social engagement metrics */}
+            <div className="flex items-center gap-6 pt-2">
+              <div className="flex items-center gap-2 text-[11px] text-muted">
+                <MessageSquare className="w-4 h-4" />
+                <span>{market.viewCount} Views</span>
+              </div>
+              <div className="flex items-center gap-2 text-[11px] text-muted">
+                <Heart className="w-4 h-4" />
+                <span>{Math.floor(market.shareCount / 2)} Likes</span>
+              </div>
+              <div className="flex items-center gap-2 text-[11px] text-muted">
+                <Share2 className="w-4 h-4" />
+                <span>{market.shareCount} Shares</span>
+              </div>
+            </div>
           </div>
 
           {/* Neural Data Visualization */}
@@ -82,7 +184,7 @@ export const MarketDetail: React.FC<MarketDetailProps> = ({ marketId, markets, o
                   <Tooltip cursor={{ fill: 'rgba(255,255,255,0.01)' }} contentStyle={{ background: '#000', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '9px' }} />
                   <Bar dataKey="external" fill="rgba(255,255,255,0.05)" radius={[0, 2, 2, 0]} barSize={8} />
                   <Bar dataKey="atypica" radius={[0, 2, 2, 0]} barSize={8}>
-                    {data.map((entry, index) => <Cell key={index} fill={entry.atypica > 50 ? '#18FF19' : '#ffffff'} />)}
+                    {data.map((entry, index) => <Cell key={index} fill={entry.isAtypicaPick ? '#18FF19' : '#ffffff'} />)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -92,20 +194,36 @@ export const MarketDetail: React.FC<MarketDetailProps> = ({ marketId, markets, o
 
         {/* Intelligence Sidebar */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="glass-panel rounded-2xl p-8 border-primary/20">
+          <div className="glass-panel rounded-2xl p-6 border-primary/20">
             <div className="flex flex-col items-center text-center space-y-6">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
-                <Target className="text-primary w-6 h-6" />
+              <div className="text-[9px] text-primary font-bold uppercase tracking-[0.3em] mb-2">Validated Logical Choice</div>
+              <div className="text-2xl font-black text-white leading-tight mb-4">
+                {pickedOption?.text}
               </div>
-              <div>
-                <div className="text-[9px] text-primary font-bold uppercase tracking-[0.3em] mb-2">Validated Logical Choice</div>
-                <div className="text-2xl font-black text-white leading-tight mb-6">
-                   {pickedOption?.text}
+
+              {/* Enhanced visualization showing both metrics */}
+              <div className="mb-4">
+                <AccuracyMeter
+                  value={market.accuracyScore || 0}
+                  size="lg"
+                  showDualRing={true}
+                  marketPercentage={pickedOption?.externalProb || 0}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 w-full text-center border-t border-white/5 pt-4">
+                <div>
+                  <div className="text-[8px] text-muted font-bold uppercase tracking-widest mb-1">Model Confidence</div>
+                  <div className="text-primary font-bold text-sm">{Math.round((market.accuracyScore || 0) * 100)}%</div>
+                </div>
+                <div>
+                  <div className="text-[8px] text-muted font-bold uppercase tracking-widest mb-1">Market Consensus</div>
+                  <div className="text-white font-bold text-sm">{Math.round((pickedOption?.externalProb || 0) * 100)}%</div>
                 </div>
               </div>
-              <AccuracyMeter value={market.accuracyScore || 0} size="lg" />
+
               <div className="flex items-center gap-2 text-muted text-[9px] font-bold uppercase tracking-widest">
-                 <ShieldCheck className="w-3.5 h-3.5 text-primary" /> Model Confidence High
+                <ShieldCheck className="w-3.5 h-3.5 text-primary" /> Model Confidence High
               </div>
             </div>
           </div>
@@ -116,7 +234,7 @@ export const MarketDetail: React.FC<MarketDetailProps> = ({ marketId, markets, o
               { id: 'reasoning', title: 'Logical Deduction', content: market.atypicaAnalysis || 'Computing...' },
             ].map(section => (
               <div key={section.id} className="glass-panel rounded-xl overflow-hidden">
-                <button 
+                <button
                   onClick={() => setExpandedSection(expandedSection === section.id ? null : section.id)}
                   className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
                 >
@@ -132,13 +250,13 @@ export const MarketDetail: React.FC<MarketDetailProps> = ({ marketId, markets, o
             ))}
           </div>
 
-          <div className="pt-6 border-t border-white/5 flex gap-3">
-             <button onClick={handleCopyLink} className="flex-1 btn-outline py-2.5 text-[10px] font-bold uppercase tracking-widest">
-                {copied ? <Check className="w-3 h-3 mx-auto" /> : 'Copy Report Link'}
-             </button>
-             <button className="p-2.5 btn-outline text-muted hover:text-white">
-                <Share2 className="w-4 h-4" />
-             </button>
+          <div className="pt-6 border-t border-white/5 flex flex-wrap gap-3">
+            <button onClick={handleCopyLink} className="flex-1 btn-outline py-2.5 text-[10px] font-bold uppercase tracking-widest">
+              {copied ? <Check className="w-3 h-3 mx-auto" /> : 'Copy Report Link'}
+            </button>
+            <button className="p-2.5 btn-outline text-muted hover:text-white">
+              <Share2 className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
