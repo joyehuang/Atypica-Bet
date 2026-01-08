@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Hexagon, User, Menu } from 'lucide-react';
+import { User, Menu } from 'lucide-react';
+import DiceHexagon from './DiceHexagon';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,16 +14,15 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.location.hash = '#'}>
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center transition-all group-hover:rotate-12">
-              <Hexagon className="text-black w-5 h-5 fill-current" />
+              <DiceHexagon className="text-black w-5 h-5 fill-current" />
             </div>
             <span className="text-sm font-black tracking-tight text-white uppercase letter-spacing-tight">
-              Atypica <span className="text-muted">Research</span>
+              Atypica <span className="text-muted">Bet</span>
             </span>
           </div>
 
           <nav className="hidden md:flex items-center gap-8">
             <a href="#" className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors">Matrix</a>
-            <a href="#/admin" className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors">Console</a>
             <a href="#" className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors">Models</a>
           </nav>
 
@@ -47,9 +47,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="col-span-2 md:col-span-1 space-y-6">
               <div className="flex items-center gap-2">
                 <div className="w-5 h-5 bg-white rounded flex items-center justify-center">
-                  <Hexagon className="text-black w-3 h-3 fill-current" />
+                  <DiceHexagon className="text-black w-3 h-3 fill-current" />
                 </div>
-                <span className="font-bold text-white uppercase tracking-tighter text-xs">Atypica Matrix</span>
+                <span className="font-bold text-white uppercase tracking-tighter text-xs">Atypica Bet</span>
               </div>
               <p className="text-[11px] text-muted leading-relaxed font-medium uppercase tracking-widest max-w-xs">
                 Objective predictive intelligence <br /> Powered by mathematical certainty.

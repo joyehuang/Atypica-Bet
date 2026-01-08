@@ -2,24 +2,24 @@
 import { Category, PredictionStatus, PredictionMarket } from './types';
 
 export const CATEGORY_LABELS: Record<Category, string> = {
-  [Category.TECH]: '科技',
-  [Category.FINANCE]: '金融',
-  [Category.SPORTS]: '体育',
-  [Category.ENTERTAINMENT]: '娱乐'
+  [Category.TECH]: 'Tech',
+  [Category.FINANCE]: 'Finance',
+  [Category.SPORTS]: 'Sports',
+  [Category.ENTERTAINMENT]: 'Entertainment'
 };
 
 export const STATUS_LABELS: Record<PredictionStatus, string> = {
-  [PredictionStatus.ACTIVE]: '预测中',
-  [PredictionStatus.CLOSED]: '已结束',
-  [PredictionStatus.SUCCESSFUL]: '预测成功',
-  [PredictionStatus.FAILED]: '预测失败'
+  [PredictionStatus.ACTIVE]: 'Active',
+  [PredictionStatus.CLOSED]: 'Closed',
+  [PredictionStatus.SUCCESSFUL]: 'Successful',
+  [PredictionStatus.FAILED]: 'Failed'
 };
 
 export const INITIAL_MARKETS: PredictionMarket[] = [
   {
     id: '1',
-    title: 'Google, OpenAI, Anthropic... 2026年哪家公司将拥有最强AI模型？',
-    description: '综合评估多模态能力、推理深度、开发者生态及商业应用落地情况。',
+    title: 'Which company will have the strongest AI model by end of 2026?',
+    description: 'Evaluating multimodal capabilities, reasoning depth, developer ecosystem, and commercial applications.',
     category: Category.TECH,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -32,47 +32,75 @@ export const INITIAL_MARKETS: PredictionMarket[] = [
     ],
     atypicaPickId: 'opt2',
     accuracyScore: 0.75,
-    atypicaAnalysis: 'OpenAI 凭借其强大的先发优势和快速的迭代能力，在 2026 年依然最有可能占据模型能力的巅峰。其 Q* 技术的突破性应用将极大提升逻辑推理上限。',
+    atypicaAnalysis: 'OpenAI with its strong first-mover advantage and rapid iteration capability is most likely to maintain the pinnacle of model capabilities in 2026. The breakthrough application of Q* technology will significantly enhance reasoning capabilities.',
     shareCount: 128,
-    viewCount: 2540
+    viewCount: 2540,
+    poolAmount: 1250000,
+    poolCurrency: 'USD'
   },
   {
     id: '2',
-    title: '比特币是否能在2025年Q4突破15万美元大关？',
-    description: '分析宏观经济走势、机构持仓变动及现货ETF资金流入情况。',
+    title: 'Will Bitcoin break $150,000 in Q4 2025?',
+    description: 'Analysis of macroeconomic trends, institutional holdings, and spot ETF cash inflows.',
     category: Category.FINANCE,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     closeDate: '2025-12-31',
     status: PredictionStatus.ACTIVE,
     options: [
-      { id: 'opt4', text: '是', externalProb: 0.45, atypicaProb: 0.65 },
-      { id: 'opt5', text: '否', externalProb: 0.55, atypicaProb: 0.35 }
+      { id: 'opt4', text: 'Yes', externalProb: 0.45, atypicaProb: 0.65 },
+      { id: 'opt5', text: 'No', externalProb: 0.55, atypicaProb: 0.35 }
     ],
     atypicaPickId: 'opt4',
     accuracyScore: 0.68,
-    atypicaAnalysis: '随着美联储降息周期的确立和减半效应的延迟爆发，流动性溢出将推动比特币进入价格发现的新阶段。',
+    atypicaAnalysis: 'With the establishment of the Fed rate cut cycle and the delayed halving effect, liquidity overflow will push Bitcoin into a new phase of price discovery.',
     shareCount: 89,
-    viewCount: 1820
+    viewCount: 1820,
+    poolAmount: 3500000,
+    poolCurrency: 'USD'
   },
   {
     id: '3',
-    title: '谁将赢得 2025 年欧冠冠军？',
-    description: '基于球员伤病预测、历史战绩、主客场优势及战术演化趋势。',
+    title: 'Who will win the 2025 Champions League?',
+    description: 'Based on player injury predictions, historical performance, home/away advantage, and tactical evolution trends.',
     category: Category.SPORTS,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     closeDate: '2025-05-31',
     status: PredictionStatus.SUCCESSFUL,
     options: [
-      { id: 'opt6', text: '曼城', externalProb: 0.35, atypicaProb: 0.45, isWinner: true },
-      { id: 'opt7', text: '皇马', externalProb: 0.4, atypicaProb: 0.3 },
-      { id: 'opt8', text: '拜仁', externalProb: 0.25, atypicaProb: 0.25 }
+      { id: 'opt6', text: 'Manchester City', externalProb: 0.35, atypicaProb: 0.45, isWinner: true },
+      { id: 'opt7', text: 'Real Madrid', externalProb: 0.4, atypicaProb: 0.3 },
+      { id: 'opt8', text: 'Bayern Munich', externalProb: 0.25, atypicaProb: 0.25 }
     ],
     atypicaPickId: 'opt6',
     accuracyScore: 0.88,
-    atypicaAnalysis: '曼城的板凳深度和瓜迪奥拉对战术细节的极致打磨，使其在欧战淘汰赛的容错率极高。',
+    atypicaAnalysis: 'Manchester City\'s bench depth and Guardiola\'s meticulous attention to tactical details gives them a high fault tolerance in Champions League knockout stages.',
     shareCount: 210,
-    viewCount: 4500
+    viewCount: 4500,
+    poolAmount: 2800000,
+    poolCurrency: 'USD'
+  },
+  {
+    id: '4',
+    title: 'Which party will win the 2026 US Presidential Election?',
+    description: 'Analysis of electoral trends, economic indicators, and key policy positions.',
+    category: Category.ENTERTAINMENT,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    closeDate: '2026-11-03',
+    status: PredictionStatus.ACTIVE,
+    options: [
+      { id: 'opt9', text: 'Democrats', externalProb: 0.48, atypicaProb: 0.55 },
+      { id: 'opt10', text: 'Republicans', externalProb: 0.47, atypicaProb: 0.42 },
+      { id: 'opt11', text: 'Other', externalProb: 0.05, atypicaProb: 0.03 }
+    ],
+    atypicaPickId: 'opt9',
+    accuracyScore: 0.62,
+    atypicaAnalysis: 'Democratic policies on healthcare and economic recovery are likely to resonate with key swing voters in battleground states.',
+    shareCount: 315,
+    viewCount: 7200,
+    poolAmount: 4800000,
+    poolCurrency: 'USD'
   }
 ];

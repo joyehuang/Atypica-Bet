@@ -38,4 +38,6 @@ export interface PredictionMarket {
   externalSource?: string;
   shareCount: number;
   viewCount: number;
+  poolAmount?: number; // 池子总金额
+  poolCurrency?: string; // 货币类型，例如 "USD"
 }
