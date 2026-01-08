@@ -7,6 +7,7 @@
     <title>Atypica Bet | AI Predictive Matrix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://use.typekit.net/unc2cav.css" rel="stylesheet"><!-- Central Gothic Font -->
     <script>
         tailwind.config = {
             theme: {
@@ -20,6 +21,7 @@
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
+                        gothic: ['"central-gothic"', 'sans-serif'],
                     },
                     animation: {
                         'subtle-pulse': 'subtle-pulse 4s ease-in-out infinite',
@@ -208,18 +210,7 @@
     <!-- 使用主入口文件 - 使用绝对路径 -->
     <script type="module" src="/index.tsx"></script>
 
-    <!-- 添加鼠标跟随效果脚本 -->
-    <script>
-        document.addEventListener('mousemove', e => {
-            const cards = document.querySelectorAll('.spotlight-card');
-            cards.forEach(card => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                card.style.setProperty('--mouse-x', `${x}px`);
-                card.style.setProperty('--mouse-y', `${y}px`);
-            });
-        });
-    </script>
+    <!-- 添加效果脚本 -->
+    <script src="/scripts/effects.js"></script>
 </body>
 </html>

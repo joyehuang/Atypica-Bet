@@ -94,7 +94,9 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
   return (
     <div
       onClick={() => onClick(market.id)}
-      className="group cursor-pointer glass-panel spotlight-card rounded-xl transition-all duration-300 hover:border-white/20 p-5"
+      className={`group cursor-pointer glass-panel glass-effect spotlight-card rounded-xl transition-all duration-300 hover:border-white/20 p-5 cursor-follow card-layered ${
+        isNearDeadline ? 'deadline-glow' : ''
+      } ${market.status === PredictionStatus.SUCCESSFUL ? 'success-glow' : ''}`}
     >
       {/* 防误解锚点 - Header with AI prediction disclaimer */}
       <div className="mb-3">
@@ -118,14 +120,11 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
 
       {/* Main Prediction Box */}
       {pickedOption && (
-        <div className="mb-4 bg-white/[0.03] border border-white/10 rounded-xl p-4">
+        <div className="mb-4 bg-white/[0.03] border border-white/10 rounded-xl p-4 card-layer-2">
           <div className="text-[11px] text-white/70 mb-1.5">Atypica predicts</div>
 
           <div className="flex flex-row justify-between items-start mb-2">
             <div className="text-lg font-bold text-white">{pickedOption.text}</div>
-            <div className="text-sm text-white/70">
-              Confidence: {getConfidenceLevel(pickedOption.atypicaProb || 0)}
-            </div>
           </div>
 
           <div className="text-3xl font-bold text-primary">
@@ -136,26 +135,6 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
         </div>
       )}
 
-      {/* How Atypica sees other outcomes - 关键语义转折 */}
-      <div className="mb-4">
-        <div className="text-[13px] font-semibold uppercase tracking-wide text-white/80 mb-2">
-          How Atypica sees other outcomes
-        </div>
-
-        <div className="space-y-2">
-          {market.options.filter(option => option.id !== market.atypicaPickId).map((option) => (
-            <div key={option.id} className="flex items-center justify-between">
-              <span className="text-sm text-white">{option.text}</span>
-              <span className="text-sm font-medium text-white">
-                {option.atypicaProb !== undefined ?
-                  `${Math.round(option.atypicaProb * 100)}%` :
-                  "N/A"}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Divider */}
       <div className="h-px bg-white/10 my-4"></div>
 
@@ -165,10 +144,13 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
           Market context (Polymarket)
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 bg-white/[0.01] p-3 rounded-lg border border-white/5 card-layer-1">
           {market.options.map((option) => (
             <div key={option.id} className="flex items-center justify-between">
-              <span className="text-sm text-white">{option.text}</span>
+              <div className="flex items-center">
+                <div className="w-4 h-4 mr-2"></div>
+                <span className="text-sm text-white">{option.text}</span>
+              </div>
               <span className="text-sm font-medium text-white">
                 {Math.round((option.externalProb || 0) * 100)}%
               </span>
@@ -178,13 +160,19 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between text-[10px] font-medium pt-2">
-        <div className="text-muted flex items-center">
-          <RefreshCw className={`w-3 h-3 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
-          <span>Updated {isRefreshing ? "now" : lastUpdated}</span>
+      <div className="flex items-center justify-between text-[10px] font-medium pt-4 mt-2 border-t border-white/10">
+        <div className="flex items-center gap-3">
+          <div className="text-muted flex items-center">
+            <RefreshCw className={`w-3 h-3 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>Updated {isRefreshing ? "now" : lastUpdated}</span>
+          </div>
+          <div className="flex items-center">
+            <Clock className="w-3 h-3 mr-1 text-amber-400" />
+            <span>End: {new Date(market.closeDate).toLocaleDateString()}</span>
+          </div>
         </div>
 
-        <div className="flex items-center text-white/50 group-hover:text-primary transition-all gap-1 font-bold">
+        <div className="flex items-center text-white/50 group-hover:text-primary transition-all gap-1 font-bold card-layer-1 px-2 py-1 rounded-full hover:bg-white/5">
           View analysis <ArrowRight className="w-3 h-3 translate-x-1 group-hover:translate-x-2 transition-transform" />
         </div>
       </div>

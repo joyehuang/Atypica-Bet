@@ -4,7 +4,8 @@ import { PredictionMarket, Category, PredictionStatus } from '../types';
 import { INITIAL_MARKETS, CATEGORY_LABELS } from '../constants';
 import { PredictionCard } from '../components/PredictionCard';
 import { AccuracyMeter } from '../components/AccuracyMeter';
-import { ChevronDown, SlidersHorizontal, CheckCircle2, Activity, Zap, ChevronRight, ArrowRight } from 'lucide-react';
+import { ChevronDown, SlidersHorizontal, CheckCircle2, Activity, Zap, ChevronRight, ArrowRight, TrendingUp, Info } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 
 interface HomeProps {
   onMarketClick: (id: string) => void;
@@ -33,6 +34,17 @@ export const Home: React.FC<HomeProps> = ({ onMarketClick, markets }) => {
   // Get successful markets for verified results section
   const successfulMarkets = markets.filter(m => m.status === PredictionStatus.SUCCESSFUL);
 
+  // Mock data for profits visualization
+  const profitData = [
+    { day: 1, bet1: 0, bet2: 0, bet3: 0, bet4: 0, dailyTotal: 0, cumulativeTotal: 0 },
+    { day: 2, bet1: 2, bet2: -1, bet3: 3, bet4: 0, dailyTotal: 4, cumulativeTotal: 4 },
+    { day: 3, bet1: 3, bet2: -2, bet3: 5, bet4: 1, dailyTotal: 7, cumulativeTotal: 11 },
+    { day: 4, bet1: -1, bet2: 1, bet3: 4, bet4: 2, dailyTotal: 6, cumulativeTotal: 17 },
+    { day: 5, bet1: -2, bet2: 0, bet3: 3, bet4: 5, dailyTotal: 6, cumulativeTotal: 23 },
+    { day: 6, bet1: 4, bet2: 2, bet3: -1, bet4: 3, dailyTotal: 8, cumulativeTotal: 31 },
+    { day: 7, bet1: 6, bet2: 3, bet3: 0, bet4: 2, dailyTotal: 11, cumulativeTotal: 42 }
+  ];
+
   return (
     <div className="max-w-7xl mx-auto px-6 pb-40">
       {/* Refined Hero */}
@@ -42,15 +54,17 @@ export const Home: React.FC<HomeProps> = ({ onMarketClick, markets }) => {
              AI Predictive Infrastructure v4.2
           </div>
 
-          <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.95] text-header">
-            Intelligence <br />Beyond Guess.
-          </h1>
+          <div className="relative z-10">
+            <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.95] text-header">
+              Intelligence <br />Beyond Guess.
+            </h1>
+          </div>
 
-          <p className="text-muted text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
+          <p className="font-gothic text-muted text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed mt-12">
             Neural networks analyzing factual volatility to provide <br className="hidden md:block" /> objective market foresight with mathematical precision.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-4 pt-4">
+          <div className="flex flex-wrap justify-center gap-4 pt-8">
             <button onClick={() => document.getElementById('market-grid')?.scrollIntoView({ behavior: 'smooth' })} className="px-8 py-3.5 btn-atypica text-sm">
               Explore Matrix
             </button>
@@ -70,6 +84,82 @@ export const Home: React.FC<HomeProps> = ({ onMarketClick, markets }) => {
              <div className="text-[10px] text-muted font-bold uppercase tracking-widest">{stat.label}</div>
           </div>
         ))}
+      </div>
+
+      {/* Profits Visualization Section */}
+      <div className="mb-24">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
+              <TrendingUp className="text-primary w-3.5 h-3.5" />
+            </div>
+            <h2 className="text-lg font-bold tracking-tight">Profit Analytics</h2>
+          </div>
+          <button className="flex items-center gap-1 text-[10px] font-bold text-muted uppercase tracking-widest hover:text-white">
+            View All Data <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="glass-panel p-6 rounded-xl card-layer-2">
+          <div className="mb-4 flex items-start justify-between">
+            <div>
+              <h3 className="text-xl font-bold text-white mb-1">Daily Bet Performance</h3>
+              <p className="text-sm text-white/60 font-gothic">
+                Individual bet performance tracked over time with daily and cumulative profit indicators
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5 p-2 bg-white/5 rounded-lg">
+              <div className="w-3 h-3 rounded-full bg-primary"></div>
+              <span className="text-xs text-white font-medium">+42% Total Return</span>
+            </div>
+          </div>
+
+          <div className="h-80 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={profitData}
+                margin={{
+                  top: 20,
+                  right: 30,
+                  left: 0,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                <XAxis dataKey="day" stroke="#666" label={{ value: 'Day', position: 'insideBottom', offset: -5, fill: '#666' }} />
+                <YAxis stroke="#666" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '4px',
+                  }}
+                  itemStyle={{ color: '#fff' }}
+                  labelStyle={{ color: '#666' }}
+                />
+                <Legend verticalAlign="top" height={36} />
+                <ReferenceLine y={0} stroke="rgba(255,255,255,0.2)" />
+                <Line type="monotone" dataKey="bet1" stroke="#8884d8" activeDot={{ r: 8 }} name="Market A" />
+                <Line type="monotone" dataKey="bet2" stroke="#82ca9d" name="Market B" />
+                <Line type="monotone" dataKey="bet3" stroke="#ffc658" name="Market C" />
+                <Line type="monotone" dataKey="bet4" stroke="#ff8042" name="Market D" />
+                <Line type="monotone" dataKey="dailyTotal" stroke="#18FF19" strokeWidth={2} name="Daily Total" />
+                <Line type="monotone" dataKey="cumulativeTotal" stroke="#ffffff" strokeWidth={2} name="Cumulative Profit" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+            <div className="flex items-start gap-2">
+              <Info className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-white/80 font-gothic">
+                Each bet line represents a separate prediction market position. The daily total shows aggregate profit/loss
+                per day across all positions, while the cumulative line displays total earnings over time.
+                All predictions use the Atypica AI predictive engine with a consistent betting strategy.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Market Controls */}
