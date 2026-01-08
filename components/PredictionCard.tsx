@@ -147,27 +147,29 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
                   </div>
                   <div>
                     <div className="text-[9px] text-primary font-bold uppercase tracking-wider">Atypica Pick</div>
-                    <div className="text-[13px] font-semibold text-white flex items-center">
+                    <div className="text-[13px] font-semibold text-white">
                       {pickedOption.text}
-                      {pickedOption.atypicaProb && (
-                        <span className="ml-1.5 text-[11px] text-primary">
-                          ({Math.round((pickedOption.atypicaProb) * 100)}%)
-                        </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center">
+                  <div className="flex flex-col items-end">
+                    <div className="text-[9px] text-white/50 font-medium mb-0.5">Probabilities</div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center">
+                        <span className="text-[9px] text-muted mr-1">Market:</span>
+                        <span className="text-[11px] font-medium text-white">{Math.round((pickedOption.externalProb || 0) * 100)}%</span>
+                      </div>
+                      {pickedOption.atypicaProb !== undefined && (
+                        <div className="flex items-center">
+                          <span className="text-[9px] text-primary mr-1">Atypica:</span>
+                          <span className="text-[11px] font-medium text-primary">{Math.round(pickedOption.atypicaProb * 100)}%</span>
+                        </div>
                       )}
                     </div>
                   </div>
                 </div>
-                {market.accuracyScore && (
-                  <div className="flex flex-col items-end">
-                    <div className="text-[9px] text-primary font-bold uppercase tracking-wider mb-0.5">Model Confidence</div>
-                    <div className="flex items-center">
-                      <AccuracyMeter value={market.accuracyScore} size="xs" showLabel={false} />
-                      <span className="ml-1 text-[10px] text-white">
-                        {Math.round(market.accuracyScore * 100)}%
-                      </span>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {market.atypicaAnalysis && (
@@ -188,28 +190,41 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
                 {market.options.map((option) => {
                   const isYes = option.text.toLowerCase() === 'yes';
                   const marketPercentage = Math.round((option.externalProb || 0) * 100);
-
-                  // 对于champions league这类市场，确定显示方式
-                  const buttonLabel = isYesNoOption
-                    ? option.text
-                    : `${option.text} - ${isYes ? 'Yes' : 'No'}`;
+                  const atypicaPercentage = option.atypicaProb !== undefined
+                    ? Math.round(option.atypicaProb * 100)
+                    : null;
+                  const hasAtypicaPrediction = atypicaPercentage !== null;
 
                   return (
                     <div
                       key={option.id}
-                      className={`flex-1 h-10 rounded-lg flex items-center justify-between px-4 cursor-pointer transition-all
+                      className={`flex-1 h-auto rounded-lg p-2.5 cursor-pointer transition-all
                         ${isYes
                           ? 'bg-green-100/10 border border-green-500/20 hover:bg-green-100/15'
                           : 'bg-red-100/10 border border-red-500/20 hover:bg-red-100/15'}`}
                     >
-                      <div className="flex items-center">
+                      <div className="flex items-center justify-between mb-1.5">
                         <span className={`font-medium text-sm ${isYes ? 'text-green-400' : 'text-red-400'}`}>
-                          {buttonLabel}
+                          {option.text}
                         </span>
                       </div>
 
-                      <div className="text-sm font-bold text-white">
-                        {marketPercentage}%
+                      <div className="flex flex-col space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] text-muted">Market:</span>
+                          <span className="text-[11px] font-medium text-white">
+                            {marketPercentage}%
+                          </span>
+                        </div>
+
+                        {hasAtypicaPrediction && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-[9px] text-primary">Atypica:</span>
+                            <span className="text-[11px] font-medium text-primary">
+                              {atypicaPercentage}%
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -230,27 +245,43 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
             <div className="bg-white/[0.02] border border-white/5 rounded-xl p-2.5">
               <div className="flex items-center justify-between mb-1.5">
                 <div className="text-[9px] text-muted font-bold uppercase tracking-wider">Market Options</div>
-                <div className="text-[9px] text-muted font-bold uppercase tracking-wider">Probability</div>
+                <div className="text-[9px] text-muted font-bold uppercase tracking-wider">Probabilities</div>
               </div>
 
               <div className="space-y-1.5">
                 {market.options.map((option) => {
                   const isAtypicaPick = option.id === market.atypicaPickId;
                   const marketPercentage = Math.round((option.externalProb || 0) * 100);
+                  const atypicaPercentage = option.atypicaProb !== undefined
+                    ? Math.round(option.atypicaProb * 100)
+                    : null;
+                  const hasAtypicaPrediction = atypicaPercentage !== null;
 
                   return (
                     <div
                       key={option.id}
-                      className={`flex items-center justify-between py-1.5 px-2 rounded ${
+                      className={`py-1.5 px-2 rounded ${
                         isAtypicaPick ? 'bg-primary/10 border border-primary/20' : 'hover:bg-white/5'
                       }`}
                     >
-                      <span className={`text-sm font-medium ${isAtypicaPick ? 'text-primary' : 'text-white'}`}>
-                        {option.text}
-                      </span>
-                      <span className={`text-sm font-medium ${isAtypicaPick ? 'text-primary' : 'text-white'}`}>
-                        {marketPercentage}%
-                      </span>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className={`text-sm font-medium ${isAtypicaPick ? 'text-primary' : 'text-white'}`}>
+                          {option.text}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-end gap-3">
+                        {hasAtypicaPrediction && (
+                          <div className="flex items-center">
+                            <span className="text-[9px] mr-1 text-primary">Atypica:</span>
+                            <span className="text-[11px] font-medium text-primary">{atypicaPercentage}%</span>
+                          </div>
+                        )}
+                        <div className="flex items-center">
+                          <span className="text-[9px] mr-1 text-muted">Market:</span>
+                          <span className="text-[11px] font-medium text-white">{marketPercentage}%</span>
+                        </div>
+                      </div>
                     </div>
                   );
                 })}
