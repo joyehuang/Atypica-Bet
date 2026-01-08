@@ -23,7 +23,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
           <nav className="hidden md:flex items-center gap-8">
             <a href="#" className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors">Matrix</a>
-            <a href="#/admin" className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors">Console</a>
             <a href="#" className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors">Models</a>
           </nav>
 

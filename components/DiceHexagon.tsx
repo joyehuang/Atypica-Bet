@@ -33,28 +33,38 @@ export const DiceHexagon: React.FC<DiceHexagonProps> = ({
         stroke="none"
       />
 
-      {/* Dice dots/lines */}
+      {/* Dice dots/lines - Horizontal lines */}
       <line
-        x1="7.5"
-        y1="10.5"
-        x2="16.5"
-        y2="10.5"
+        x1="8"
+        y1="9"
+        x2="16"
+        y2="9"
         stroke="#000"
         strokeWidth={strokeWidth}
       />
       <line
-        x1="7.5"
-        y1="13.5"
-        x2="16.5"
-        y2="13.5"
+        x1="8"
+        y1="12"
+        x2="16"
+        y2="12"
         stroke="#000"
         strokeWidth={strokeWidth}
       />
+      <line
+        x1="8"
+        y1="15"
+        x2="16"
+        y2="15"
+        stroke="#000"
+        strokeWidth={strokeWidth}
+      />
+
+      {/* Vertical line */}
       <line
         x1="12"
-        y1="8"
+        y1="7.5"
         x2="12"
-        y2="16"
+        y2="16.5"
         stroke="#000"
         strokeWidth={strokeWidth}
       />

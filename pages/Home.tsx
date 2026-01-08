@@ -54,9 +54,6 @@ export const Home: React.FC<HomeProps> = ({ onMarketClick }) => {
             <button onClick={() => document.getElementById('market-grid')?.scrollIntoView({ behavior: 'smooth' })} className="px-8 py-3.5 btn-atypica text-sm">
               Explore Matrix
             </button>
-            <button className="px-8 py-3.5 btn-outline text-sm">
-              Model Research
-            </button>
           </div>
         </div>
       </section>
@@ -128,7 +125,7 @@ export const Home: React.FC<HomeProps> = ({ onMarketClick }) => {
         )}
       </div>
 
-      {/* Improved Verified Logic Results Section */}
+      {/* Enhanced Verified Logic Results Section */}
       <div className="mt-32">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -142,46 +139,141 @@ export const Home: React.FC<HomeProps> = ({ onMarketClick }) => {
           </button>
         </div>
 
-        {/* Compact Verified Results Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {successfulMarkets.slice(0, 2).map(market => {
+        {/* Detailed Verified Results Card */}
+        <div className="grid grid-cols-1 gap-6">
+          {successfulMarkets.slice(0, 1).map(market => {
             const pickedOption = market.options.find(o => o.id === market.atypicaPickId);
-            const marketConsensus = pickedOption?.externalProb || 0;
+            const winningOption = market.options.find(o => o.isWinner);
+            const correctPrediction = pickedOption?.id === winningOption?.id;
 
             return (
               <div
                 key={market.id}
                 onClick={() => onMarketClick(market.id)}
-                className="group cursor-pointer glass-panel spotlight-card rounded-xl flex items-center transition-all duration-300 hover:border-white/20 p-4 gap-5"
+                className="group cursor-pointer glass-panel spotlight-card rounded-xl transition-all duration-300 hover:border-white/20 p-6"
               >
-                <div className="flex-shrink-0">
-                  <AccuracyMeter
-                    value={market.accuracyScore || 0}
-                    size="md"
-                    showDualRing={true}
-                    marketPercentage={marketConsensus}
-                  />
-                </div>
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <span className="tag-atypica">
+                        {CATEGORY_LABELS[market.category]}
+                      </span>
+                      <span className="tag-atypica text-primary border-primary/30 bg-primary/5">
+                        Verified Success
+                      </span>
+                    </div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <span className="tag-atypica text-xs py-0.5">
-                      {CATEGORY_LABELS[market.category]}
-                    </span>
-                    <span className="tag-atypica text-primary border-primary/30 bg-primary/5 text-xs py-0.5">
-                      Verified
-                    </span>
+                    <h3 className="text-xl font-semibold text-white leading-tight mb-2 group-hover:text-primary transition-colors">
+                      {market.title}
+                    </h3>
+
+                    <p className="text-sm text-white/70 mb-4 line-clamp-2">
+                      {market.description}
+                    </p>
                   </div>
 
-                  <h3 className="text-[14px] font-medium text-white leading-tight mb-2 truncate group-hover:text-primary transition-colors">
-                    {market.title}
-                  </h3>
-
-                  <div className="flex items-center">
-                    <div className="text-[11px]">
-                      <span className="text-muted">Atypica Choice:</span>{" "}
-                      <span className="text-primary font-medium">{pickedOption?.text}</span>
+                  <div className="flex-shrink-0 flex flex-col items-center">
+                    <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-1">Model Accuracy</div>
+                    <div className="flex items-center gap-1">
+                      <div className="text-2xl font-bold text-primary">{Math.round((market.accuracyScore || 0) * 100)}%</div>
                     </div>
+                  </div>
+                </div>
+
+                <div className="bg-white/[0.03] rounded-lg p-4 border border-white/10 mb-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Zap className="w-4 h-4 text-primary" />
+                    <div className="text-sm font-bold text-primary">Atypica Analysis & Prediction</div>
+                  </div>
+
+                  <div className="mb-4">
+                    <p className="text-sm text-white/80 italic">
+                      "{market.atypicaAnalysis}"
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-[10px] text-white/50 mb-1">Atypica's Choice</div>
+                      <div className="text-base font-medium text-white flex items-center gap-2">
+                        {pickedOption?.text}
+                        <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded">
+                          {Math.round((pickedOption?.atypicaProb || 0) * 100)}% Confidence
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <div className="text-[10px] text-white/50 mb-1">Market Consensus</div>
+                      <div className="text-base font-medium text-white flex items-center gap-2">
+                        {Math.round((pickedOption?.externalProb || 0) * 100)}% Probability
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-white/60">All Prediction Options</div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-white/60">Result</div>
+                </div>
+
+                <div className="space-y-2">
+                  {market.options.map(option => (
+                    <div
+                      key={option.id}
+                      className={`flex items-center justify-between p-2 rounded ${
+                        option.isWinner ? 'bg-green-500/10 border border-green-500/20' :
+                        option.id === market.atypicaPickId ? 'bg-primary/10 border border-primary/20' :
+                        'bg-white/5'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm font-medium ${
+                          option.id === market.atypicaPickId ? 'text-primary' : 'text-white'
+                        }`}>
+                          {option.text}
+                        </span>
+                        {option.id === market.atypicaPickId && (
+                          <span className="text-[9px] bg-primary/20 text-primary px-1.5 py-0.5 rounded">
+                            Atypica Pick
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-3 text-sm">
+                        <div className="flex items-center">
+                          <span className="text-[9px] mr-1 text-muted">Market:</span>
+                          <span className="text-xs font-medium text-white">{Math.round((option.externalProb || 0) * 100)}%</span>
+                        </div>
+                        {option.atypicaProb !== undefined && (
+                          <div className="flex items-center">
+                            <span className="text-[9px] mr-1 text-primary">Atypica:</span>
+                            <span className="text-xs font-medium text-primary">{Math.round(option.atypicaProb * 100)}%</span>
+                          </div>
+                        )}
+                        {option.isWinner && (
+                          <div className="flex items-center gap-1">
+                            <CheckCircle2 className="w-4 h-4 text-green-400" />
+                            <span className="text-xs font-bold text-green-400">Winner</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
+                  <div className="flex items-center gap-3">
+                    <div className="text-xs text-white/50">
+                      <span className="font-medium">Resolved:</span> {new Date(market.resolveDate || market.updatedAt).toLocaleDateString()}
+                    </div>
+                    <div className="text-xs text-white/50">
+                      <span className="font-medium">Volume:</span> ${(market.poolAmount || 0).toLocaleString()}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center text-white/50 group-hover:text-primary transition-all gap-1 font-bold uppercase tracking-widest text-[9px]">
+                    View Full Report <ArrowRight className="w-3.5 h-3.5 translate-x-1 group-hover:translate-x-2 transition-transform" />
                   </div>
                 </div>
               </div>
