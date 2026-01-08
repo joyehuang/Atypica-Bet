@@ -4,7 +4,7 @@ import { PredictionMarket, Category, PredictionStatus } from '../types';
 import { INITIAL_MARKETS, CATEGORY_LABELS } from '../constants';
 import { PredictionCard } from '../components/PredictionCard';
 import { AccuracyMeter } from '../components/AccuracyMeter';
-import { ChevronDown, SlidersHorizontal, CheckCircle2, Activity, Zap, ChevronRight } from 'lucide-react';
+import { ChevronDown, SlidersHorizontal, CheckCircle2, Activity, Zap, ChevronRight, ArrowRight } from 'lucide-react';
 
 interface HomeProps {
   onMarketClick: (id: string) => void;
