@@ -356,10 +356,16 @@ export default function HomeClient({ initialMarkets }: HomeClientProps) {
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
                   <div className="flex items-center gap-3">
                     <div className="text-xs text-white/50">
-                      <span className="font-medium">Resolved:</span> {new Date(market.resolveDate || market.updatedAt).toLocaleDateString()}
+                      <span className="font-medium">Resolved:</span>{' '}
+                      {new Date(market.resolveDate || market.updatedAt).toLocaleDateString('zh-CN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                      })}
                     </div>
                     <div className="text-xs text-white/50">
-                      <span className="font-medium">Volume:</span> ${(market.poolAmount || 0).toLocaleString()}
+                      <span className="font-medium">Volume:</span>{' '}
+                      {(market.poolAmount || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}
                     </div>
                   </div>
 
