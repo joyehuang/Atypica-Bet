@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Layout } from '@/components/Layout';
 import MouseEffects from '@/components/MouseEffects';
+import { Providers } from './providers';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -27,8 +28,10 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} bg-black text-white antialiased`}>
-        <MouseEffects />
-        <Layout>{children}</Layout>
+        <Providers>
+          <MouseEffects />
+          <Layout>{children}</Layout>
+        </Providers>
       </body>
     </html>
   );

@@ -30,14 +30,21 @@
 ├── src/
 │   ├── app/              # Next.js App Router
 │   │   ├── layout.tsx    # 根布局
-│   │   ├── page.tsx      # 主页
-│   │   ├── AppClient.tsx # 客户端应用逻辑
+│   │   ├── page.tsx      # 主页路由
+│   │   ├── providers.tsx # Context Providers
 │   │   ├── globals.css   # 全局样式
 │   │   ├── api/          # API 路由
-│   │   ├── market/[id]/  # 动态路由
+│   │   │   └── markets/  # 市场 API
+│   │   ├── market/[id]/  # 动态路由 - 市场详情
+│   │   │   └── page.tsx
 │   │   └── admin/        # 管理页面
+│   │       ├── page.tsx  # 管理列表
+│   │       └── create/
+│   │           └── page.tsx  # 创建市场
+│   ├── contexts/         # React Context (状态管理)
+│   │   └── MarketContext.tsx
 │   ├── components/       # React 组件
-│   ├── pages/            # 页面组件
+│   ├── pages/            # 页面组件 (客户端)
 │   ├── services/         # API 服务
 │   ├── lib/              # 工具库
 │   ├── types.ts          # TypeScript 类型
@@ -113,6 +120,37 @@ DIRECT_URL=your_direct_url
 - `npm run db:studio` - 打开 Prisma Studio
 - `npm run db:migrate` - 运行迁移
 - `npm run db:reset` - 重置数据库
+
+## Next.js App Router 架构模式
+
+本项目采用了正确的 Next.js App Router 模式：
+
+### 1. 文件路由系统
+每个路由都有自己独立的 `page.tsx` 文件：
+```
+src/app/
+├── page.tsx              # / - 主页
+├── market/[id]/page.tsx  # /market/[id] - 市场详情
+├── admin/page.tsx        # /admin - 管理列表
+└── admin/create/page.tsx # /admin/create - 创建市场
+```
+
+### 2. 状态管理
+使用 React Context 进行全局状态管理：
+- `MarketContext` - 管理市场数据和操作
+- 通过 `useMarkets()` hook 在组件中访问
+
+### 3. 服务器组件 vs 客户端组件
+- **服务器组件** (默认): `layout.tsx` - 提升性能
+- **客户端组件** (`'use client'`): 所有 `page.tsx` 和需要交互的组件
+
+### 4. Providers 模式
+使用 `providers.tsx` 包装所有客户端 Context Providers：
+```tsx
+<Providers>
+  <Layout>{children}</Layout>
+</Providers>
+```
 
 ## 新增功能
 
