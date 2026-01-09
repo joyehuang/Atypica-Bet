@@ -1,0 +1,81 @@
+import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
+import { prisma } from '@/lib/prisma';
+import { PredictionMarket, PredictionStatus } from '@/types';
+import MarketDetailClient from './MarketDetailClient';
+
+async function getMarket(id: string): Promise<PredictionMarket | null> {
+  try {
+    const market = await prisma.market.findUnique({
+      where: { id },
+      include: { options: true },
+    });
+
+    if (!market) return null;
+
+    return {
+      id: market.id,
+      title: market.title,
+      description: market.description || '',
+      category: market.category as any,
+      createdAt: market.createdAt.toISOString(),
+      updatedAt: market.updatedAt.toISOString(),
+      closeDate: market.closeDate.toISOString(),
+      resolveDate: market.resolveDate?.toISOString(),
+      status: market.status as PredictionStatus,
+      options: market.options.map(opt => ({
+        id: opt.id,
+        text: opt.text,
+        externalProb: opt.externalProb || undefined,
+        atypicaProb: opt.atypicaProb || undefined,
+        isWinner: opt.isWinner ?? undefined,
+      })),
+      atypicaPickId: market.atypicaPickId || undefined,
+      atypicaAnalysis: market.atypicaAnalysis || undefined,
+      accuracyScore: market.accuracyScore || undefined,
+      externalSource: market.externalSource || undefined,
+      shareCount: market.shareCount || 0,
+      viewCount: market.viewCount || 0,
+      poolAmount: market.poolAmount || undefined,
+      poolCurrency: market.poolCurrency || undefined,
+    };
+  } catch (error) {
+    console.error('Failed to fetch market:', error);
+    return null;
+  }
+}
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const market = await getMarket(params.id);
+
+  if (!market) {
+    return {
+      title: 'Market Not Found',
+    };
+  }
+
+  return {
+    title: market.title,
+    description: market.description,
+    openGraph: {
+      title: market.title,
+      description: market.description,
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: market.title,
+      description: market.description,
+    },
+  };
+}
+
+export default async function MarketDetailPage({ params }: { params: { id: string } }) {
+  const market = await getMarket(params.id);
+
+  if (!market) {
+    notFound();
+  }
+
+  return <MarketDetailClient market={market} />;
+}

@@ -1,0 +1,14 @@
+{
+  "pages": {
+    "/api/polymarket/events/slug/[slug]/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/polymarket/events/slug/[slug]/route.js"
+    ],
+    "/api/markets/batch/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/markets/batch/route.js"
+    ]
+  }
+}

@@ -1,7 +1,8 @@
+'use client';
 
 import React, { useState, useEffect } from 'react';
-import { PredictionMarket, Category, PredictionStatus } from '../types';
-import { CATEGORY_LABELS, STATUS_LABELS } from '../constants';
+import { PredictionMarket, Category, PredictionStatus } from '@/types';
+import { CATEGORY_LABELS, STATUS_LABELS } from '@/constants';
 import { AccuracyMeter } from './AccuracyMeter';
 import { Calendar, ArrowRight, Target, Zap, RefreshCw, MessageSquare, Heart, Share2, Clock, DollarSign, AlertTriangle, Info, Tag } from 'lucide-react';
 
