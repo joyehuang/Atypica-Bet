@@ -4,10 +4,10 @@ import { fetchMarketBySlug } from '@/lib/polymarket';
 // GET /api/polymarket/events/slug/[slug] - Polymarket API 代理
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = await context.params;
 
     if (!slug) {
       return NextResponse.json(
