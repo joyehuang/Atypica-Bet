@@ -7,6 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url = env("DATABASE_URL")
 }
 
 // 预测市场主表
@@ -24,9 +25,10 @@ model Market {
   updatedAt   DateTime  @updatedAt
 
   // AI 分析字段
-  atypicaPickId   String?
-  atypicaAnalysis String?  @db.Text
-  accuracyScore   Float?
+  atypicaPickId      String?
+  atypicaAnalysis    String?  @db.Text
+  atypicaAnalysisUrl String?  // Atypica 分析报告链接
+  accuracyScore      Float?
 
   // 外部数据源
   externalSource String?

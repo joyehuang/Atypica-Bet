@@ -1,0 +1,19 @@
+# Prisma
+prisma/migrations
+*.db
+*.db-journal
+
+# Development
+.env.local
+.env.*.local
+result.json
+temp_output.html
+
+# Logs
+*.log
+logs
+
+# IDE
+.vscode
+.idea
+
