@@ -1,8 +1,7 @@
-'use client';
-
+'use client'
 import React, { useState, useEffect } from 'react';
-import { PredictionMarket, Category, PredictionStatus } from '@/types';
-import { CATEGORY_LABELS, STATUS_LABELS } from '@/constants';
+import { PredictionMarket, Category, PredictionStatus } from '../types';
+import { CATEGORY_LABELS, STATUS_LABELS } from '../constants';
 import { AccuracyMeter } from './AccuracyMeter';
 import { Calendar, ArrowRight, Target, Zap, RefreshCw, MessageSquare, Heart, Share2, Clock, DollarSign, AlertTriangle, Info, Tag } from 'lucide-react';
 
@@ -77,6 +76,34 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
     }, 800);
   };
 
+  const renderConfidenceIndicator = (probability: number) => {
+    // 高信心: 三个都是绿色 (>= 0.8)
+    // 中等信心: 两个绿色, 一个白色 (>= 0.6)
+    // 低信心: 一个绿色, 两个白色 (< 0.6)
+    const confidenceLevel = getConfidenceLevel(probability);
+    const levelMap = {
+      "High": 3,
+      "Medium": 2,
+      "Moderate": 1,
+      "Low": 1
+    };
+    const activeCount = levelMap[confidenceLevel] || 1;
+
+    return (
+      <div className="flex flex-col gap-1.5">
+        <div className="text-xs font-semibold text-white/70 mb-0.5">Prediction confidence</div>
+        <div className="flex gap-1.5">
+          {[1, 2, 3].map((index) => (
+            <div
+              key={index}
+              className={`h-1.2 w-5 ${index <= activeCount ? 'bg-primary' : 'bg-white/20'}`}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const pickedOption = market.options.find(o => o.id === market.atypicaPickId);
   const marketLeader = market.options.reduce((prev, current) =>
     (current.externalProb || 0) > (prev.externalProb || 0) ? current : prev
@@ -122,17 +149,14 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
       {/* Main Prediction Box */}
       {pickedOption && (
         <div className="mb-4 bg-white/[0.03] border border-white/10 rounded-xl p-4 card-layer-2">
-          <div className="text-[11px] text-white/70 mb-1.5">Atypica predicts</div>
-
           <div className="flex flex-row justify-between items-start mb-2">
             <div className="text-lg font-bold text-white">{pickedOption.text}</div>
           </div>
 
-          <div className="text-3xl font-bold text-primary">
-            {pickedOption.atypicaProb !== undefined ?
-              `${Math.round(pickedOption.atypicaProb * 100)}%` :
-              "N/A"}
-          </div>
+          {pickedOption.atypicaProb !== undefined ?
+            renderConfidenceIndicator(pickedOption.atypicaProb) :
+            <div className="text-white">N/A</div>
+          }
         </div>
       )}
 
@@ -161,21 +185,30 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between text-[10px] font-medium pt-4 mt-2 border-t border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="text-muted flex items-center">
-            <RefreshCw className={`w-3 h-3 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>Updated {isRefreshing ? "now" : lastUpdated}</span>
+      <div className="flex flex-col gap-3 pt-4 mt-2 border-t border-white/10">
+        <div className="flex items-center justify-between text-[10px] font-medium">
+          <div className="flex items-center gap-3">
+            <div className="text-muted flex items-center">
+              <RefreshCw className={`w-3 h-3 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>Updated {isRefreshing ? "now" : lastUpdated}</span>
+            </div>
+            <div className="flex items-center">
+              <Clock className="w-3 h-3 mr-1 text-amber-400" />
+              <span>End: {new Date(market.closeDate).toLocaleDateString()}</span>
+            </div>
           </div>
-          <div className="flex items-center">
-            <Clock className="w-3 h-3 mr-1 text-amber-400" />
-            <span>End: {new Date(market.closeDate).toLocaleDateString()}</span>
+
+          <div className="flex items-center text-white/50 group-hover:text-primary transition-all gap-1 font-bold card-layer-1 px-2 py-1 rounded-full hover:bg-white/5">
+            View analysis <ArrowRight className="w-3 h-3 translate-x-1 group-hover:translate-x-2 transition-transform" />
           </div>
         </div>
 
-        <div className="flex items-center text-white/50 group-hover:text-primary transition-all gap-1 font-bold card-layer-1 px-2 py-1 rounded-full hover:bg-white/5">
-          View analysis <ArrowRight className="w-3 h-3 translate-x-1 group-hover:translate-x-2 transition-transform" />
-        </div>
+        {formattedPoolAmount && (
+          <div className="flex items-center gap-1.5 text-[11px] font-medium">
+            <DollarSign className="w-3 h-3 text-primary" />
+            <span className="text-white/80">Total Pool: <span className="text-white font-semibold">{formattedPoolAmount}</span></span>
+          </div>
+        )}
       </div>
     </div>
   );
