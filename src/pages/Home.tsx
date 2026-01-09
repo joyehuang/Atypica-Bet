@@ -1,9 +1,9 @@
 
 import React, { useState, useMemo } from 'react';
-import { PredictionMarket, Category, PredictionStatus } from '../types';
-import { INITIAL_MARKETS, CATEGORY_LABELS } from '../constants';
-import { PredictionCard } from '../components/PredictionCard';
-import { AccuracyMeter } from '../components/AccuracyMeter';
+import { PredictionMarket, Category, PredictionStatus } from '@/types';
+import { INITIAL_MARKETS, CATEGORY_LABELS } from '@/constants';
+import { PredictionCard } from '@/components/PredictionCard';
+import { AccuracyMeter } from '@/components/AccuracyMeter';
 import { ChevronDown, SlidersHorizontal, CheckCircle2, Activity, Zap, ChevronRight, ArrowRight, TrendingUp, Info } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 

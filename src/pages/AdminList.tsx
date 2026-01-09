@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { PredictionMarket, PredictionStatus } from '../types';
-import { CATEGORY_LABELS, STATUS_LABELS } from '../constants';
+import { PredictionMarket, PredictionStatus } from '@/types';
+import { CATEGORY_LABELS, STATUS_LABELS } from '@/constants';
 import { Plus, Edit2, Trash2, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface AdminListProps {

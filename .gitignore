@@ -39,3 +39,11 @@ main.jsx
 nul
 result.json
 temp_output.html
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+
+# Build output
+build/

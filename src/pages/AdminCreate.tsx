@@ -1,14 +1,14 @@
 
 import React, { useState } from 'react';
-import { Category, PredictionOption, PredictionMarket, PredictionStatus } from '../types';
-import { generatePredictionAnalysis, parseAnalysis } from '../services/geminiService';
+import { Category, PredictionOption, PredictionMarket, PredictionStatus } from '@/types';
+import { generatePredictionAnalysis, parseAnalysis } from '@/services/geminiService';
 import { ChevronLeft, Plus, X, Sparkles, Loader2, Save, Download, Search } from 'lucide-react';
 import {
   fetchMarketBySlug,
   convertEventGroupToMarkets,
   extractSlugFromUrl
-} from '../services/polymarketService';
-import type { PolymarketEventGroup } from '../types';
+} from '@/services/polymarketService';
+import type { PolymarketEventGroup } from '@/types';
 
 interface AdminCreateProps {
   onBack: () => void;

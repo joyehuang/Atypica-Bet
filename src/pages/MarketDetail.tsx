@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { PredictionMarket, Category, PredictionStatus } from '../types';
-import { CATEGORY_LABELS, STATUS_LABELS } from '../constants';
-import { AccuracyMeter } from '../components/AccuracyMeter';
+import { PredictionMarket, Category, PredictionStatus } from '@/types';
+import { CATEGORY_LABELS, STATUS_LABELS } from '@/constants';
+import { AccuracyMeter } from '@/components/AccuracyMeter';
 import {
   ChevronLeft, Share2, Target, Activity, ShieldCheck, Copy,
   Twitter, Linkedin, Check, ChevronDown, ChevronUp, Clock,

@@ -1,5 +1,7 @@
+'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { User, Menu } from 'lucide-react';
 import DiceHexagon from './DiceHexagon';
 
@@ -12,14 +14,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     <div className="min-h-screen flex flex-col font-sans">
       <header className="sticky top-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.location.hash = '#'}>
+          <Link href="/" className="flex items-center gap-3 cursor-pointer group">
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center transition-all group-hover:rotate-12">
               <DiceHexagon className="text-black w-5 h-5 fill-current" />
             </div>
             <span className="text-sm font-black tracking-tight text-white uppercase letter-spacing-tight">
               Atypica <span className="text-muted">Bet</span>
             </span>
-          </div>
+          </Link>
 
           <nav className="hidden md:flex items-center gap-8">
             <a href="#" className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors">Matrix</a>
