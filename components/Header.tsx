@@ -20,11 +20,10 @@ export const Header: React.FC = () => {
 
         <nav className="hidden md:flex items-center gap-8">
           <a href="#" className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors">Matrix</a>
-          <a href="#" className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors">Models</a>
         </nav>
 
         <div className="flex items-center gap-4">
-          <button className="btn-outline px-6 py-2 text-[11px] font-bold uppercase tracking-widest">
+          <button className="btn-outline px-6 py-2 text-[11px] font-bold uppercase tracking-widest hidden">
             Connect
           </button>
           <button className="md:hidden p-2 text-white">

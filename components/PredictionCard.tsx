@@ -4,18 +4,45 @@ import { PredictionMarket, Category, PredictionStatus } from '../types';
 import { CATEGORY_LABELS, STATUS_LABELS } from '../constants';
 import { AccuracyMeter } from './AccuracyMeter';
 import { Calendar, ArrowRight, Target, Zap, RefreshCw, MessageSquare, Heart, Share2, Clock, DollarSign, AlertTriangle, Info, Tag } from 'lucide-react';
+import { useLightCard } from '../hooks/useLightCard';
 
 interface PredictionCardProps {
   market: PredictionMarket;
   onClick: (id: string) => void;
   featured?: boolean;
+  marketLabel?: string; // A, B, C 等标签
 }
 
-export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick, featured = false }) => {
-  const [lastUpdated, setLastUpdated] = useState<string>("Just now");
+export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick, featured = false, marketLabel }) => {
+  const [lastUpdated, setLastUpdated] = useState<string>("");
   const [isNearDeadline, setIsNearDeadline] = useState<boolean>(false);
   const [countdown, setCountdown] = useState<string>("");
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
+  // 格式化更新时间
+  useEffect(() => {
+    const formatUpdateTime = () => {
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const day = now.getDate();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const formattedMinutes = minutes.toString().padStart(2, '0');
+      return `${month}/${day} ${hours}:${formattedMinutes}`;
+    };
+    
+    setLastUpdated(formatUpdateTime());
+  }, [isRefreshing]);
+  
+  // 橙黄色光效（增强可见度）
+  const { cardRef: lightCardRef } = useLightCard({
+    light: {
+      color: 'rgba(255, 179, 71, 0.4)',
+      width: 100,
+      height: 100,
+      blur: 60
+    }
+  });
 
   // Calculate time remaining until close date
   useEffect(() => {
@@ -72,7 +99,13 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
     // Simulate refresh - in a real implementation, this would fetch updated data
     setTimeout(() => {
       setIsRefreshing(false);
-      setLastUpdated("Just now");
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const day = now.getDate();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const formattedMinutes = minutes.toString().padStart(2, '0');
+      setLastUpdated(`${month}/${day} ${hours}:${formattedMinutes}`);
     }, 800);
   };
 
@@ -135,23 +168,39 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
     (market.options[0].text.toLowerCase() === "yes" || market.options[0].text.toLowerCase() === "no") &&
     (market.options[1].text.toLowerCase() === "yes" || market.options[1].text.toLowerCase() === "no");
 
-  // Format pool amount with currency
+  // Format pool amount with K/M abbreviations
+  const formatAmount = (amount: number): string => {
+    if (amount >= 1000000) {
+      return `${(amount / 1000000).toFixed(1)}M`;
+    } else if (amount >= 1000) {
+      return `${(amount / 1000).toFixed(1)}K`;
+    }
+    return amount.toFixed(0);
+  };
+
   const formattedPoolAmount = market.poolAmount
-    ? `${market.poolAmount.toLocaleString('en-US', { maximumFractionDigits: 0 })} ${market.poolCurrency || 'USD'}`
+    ? formatAmount(market.poolAmount)
     : null;
 
   return (
     <div
+      ref={lightCardRef}
       onClick={() => onClick(market.id)}
-      className={`group cursor-pointer glass-panel glass-effect spotlight-card rounded-xl transition-all duration-300 hover:border-white/20 p-5 cursor-follow card-layered ${
-        isNearDeadline ? 'deadline-glow' : ''
-      } ${market.status === PredictionStatus.SUCCESSFUL ? 'success-glow' : ''}`}
+      className={`group cursor-pointer glass-panel glass-effect spotlight-card rounded-xl transition-all duration-300 hover:border-white/20 p-5 cursor-follow card-layered relative ${
+        market.status === PredictionStatus.SUCCESSFUL ? 'success-glow' : ''
+      }`}
     >
       {/* 防误解锚点 - Header with AI prediction disclaimer */}
       <div className="mb-3">
         <div className="flex items-center justify-between mb-1.5">
-          <div className="flex items-center">
-            <Zap className="w-4 h-4 text-primary mr-1.5" />
+          <div className="flex items-center gap-1.5">
+            {/* Market Label (A, B, C) - 细绿色边框+白色字母居中，闪电图标在右下角 */}
+            {marketLabel && (
+              <div className="relative w-7 h-7 rounded-md border border-primary flex items-center justify-center bg-transparent">
+                <span className="text-[11px] font-bold text-white">{marketLabel}</span>
+                <Zap className="absolute -bottom-1 -right-1 w-3 h-3 text-primary" />
+              </div>
+            )}
             <span className="text-[12px] font-bold text-primary">Atypica AI Prediction</span>
           </div>
           <div className="flex items-center text-[9px] text-white/50 gap-1">
@@ -159,11 +208,11 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
             <span>{CATEGORY_LABELS[market.category]}</span>
           </div>
         </div>
-        <p className="text-[10px] text-muted">Based on simulated agent behavior</p>
+        <p className="text-[10px] text-muted text-left">Based on simulated agent behavior</p>
       </div>
 
       {/* Prediction Question */}
-      <h3 className="text-lg font-semibold text-white leading-snug mb-4 group-hover:text-primary transition-colors">
+      <h3 className="text-lg font-semibold text-white leading-snug mb-4">
         {market.title}
       </h3>
 
@@ -239,13 +288,25 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
       <div className="flex flex-col gap-3 pt-4 mt-2 border-t border-white/10">
         <div className="flex items-center justify-between text-[10px] font-medium">
           <div className="flex items-center gap-3">
-            <div className="text-muted flex items-center">
-              <RefreshCw className={`w-3 h-3 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span>Updated {isRefreshing ? "now" : lastUpdated}</span>
+            <div className="text-muted flex items-start gap-1 text-[9px] leading-tight">
+              <RefreshCw className={`w-2.5 h-2.5 mt-0.5 flex-shrink-0 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="break-words">
+                Updated<br />
+                {isRefreshing ? "now" : lastUpdated}
+              </span>
             </div>
-            <div className="flex items-center">
-              <Clock className="w-3 h-3 mr-1 text-amber-400" />
-              <span>End: {new Date(market.closeDate).toLocaleDateString()}</span>
+            <div className={`flex items-center ${isNearDeadline ? 'glow-text' : ''}`}>
+              <Clock className={`w-3 h-3 mr-1 ${isNearDeadline ? 'text-amber-400 glow-icon' : 'text-amber-400'}`} />
+              <span className={isNearDeadline ? 'text-amber-400' : ''}>
+                <span className={isNearDeadline ? 'glow-text' : ''}>End:</span>{' '}
+                <span className={isNearDeadline ? 'glow-text' : ''}>{(() => {
+                  const date = new Date(market.closeDate);
+                  const month = date.getMonth() + 1;
+                  const day = date.getDate();
+                  const year = date.getFullYear();
+                  return `${month}/${day}/${year}`;
+                })()}</span>
+              </span>
             </div>
           </div>
 
@@ -257,7 +318,7 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
         {formattedPoolAmount && (
           <div className="flex items-center gap-1.5 text-[11px] font-medium">
             <DollarSign className="w-3 h-3 text-primary" />
-            <span className="text-white/80">Total Pool: <span className="text-white font-semibold">{formattedPoolAmount}</span></span>
+            <span className="text-white/80">Vol.: <span className="text-white font-semibold">{formattedPoolAmount}</span></span>
           </div>
         )}
       </div>
