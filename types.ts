@@ -40,6 +40,11 @@ export interface PredictionMarket {
   viewCount: number;
   poolAmount?: number; // 池子总金额
   poolCurrency?: string; // 货币类型，例如 "USD"
+  // NFT 持仓字段
+  nftPercentRealizedPnl?: number; // 收益率/赔率
+  nftCurrentValue?: number; // 当前价值
+  nftWinValue?: number; // Win value
+  nftLastSynced?: string; // 最后同步时间
 }
 
 // Polymarket API 响应类型
@@ -85,4 +90,34 @@ export interface PolymarketEventGroup {
   volume: number;
   markets: PolymarketSubMarket[];
   tags: PolymarketTag[];
+}
+
+// Polymarket 钱包持仓类型
+export interface PolymarketPosition {
+  proxyWallet: string;
+  asset: string;
+  conditionId: string;
+  size: number;
+  avgPrice: number;
+  initialValue: number;
+  currentValue: number;
+  cashPnl: number;
+  percentPnl: number;
+  totalBought: number;
+  realizedPnl: number;
+  percentRealizedPnl: number;
+  curPrice: number;
+  redeemable: boolean;
+  mergeable: boolean;
+  title: string;
+  slug: string;
+  icon: string;
+  eventId: string;
+  eventSlug: string;
+  outcome: string;
+  outcomeIndex: number;
+  oppositeOutcome: string;
+  oppositeAsset: string;
+  endDate: string;
+  negativeRisk: boolean;
 }

@@ -18,14 +18,14 @@ export const MOCK_MARKETS: PredictionMarket[] = [
         id: 'opt-btc-yes',
         text: 'Yes',
         externalProb: 0.58,
-        atypicaProb: 0.74,
+        atypicaProb: 0.3, // 30% - 红色 bar
         isWinner: false,
       },
       {
         id: 'opt-btc-no',
         text: 'No',
         externalProb: 0.42,
-        atypicaProb: 0.26,
+        atypicaProb: 0.7,
         isWinner: false,
       },
     ],
@@ -38,6 +38,11 @@ export const MOCK_MARKETS: PredictionMarket[] = [
     viewCount: 5421,
     poolAmount: 2_500_000,
     poolCurrency: 'USD',
+    // NFT 持仓 mock 数据
+    nftPercentRealizedPnl: 15.5, // 正收益
+    nftCurrentValue: 0.155, // 1 * 15.5 / 100
+    nftWinValue: 1.0, // 购买 1 美元
+    nftLastSynced: new Date().toISOString(),
   },
   {
     id: 'mock-2',
@@ -55,14 +60,14 @@ export const MOCK_MARKETS: PredictionMarket[] = [
         id: 'opt-iph-yes',
         text: 'Yes',
         externalProb: 0.65,
-        atypicaProb: 0.82,
+        atypicaProb: 0.55, // 55% - 黄色 bar
         isWinner: false,
       },
       {
         id: 'opt-iph-no',
         text: 'No',
         externalProb: 0.35,
-        atypicaProb: 0.18,
+        atypicaProb: 0.45,
         isWinner: false,
       },
     ],
@@ -75,6 +80,11 @@ export const MOCK_MARKETS: PredictionMarket[] = [
     viewCount: 9876,
     poolAmount: 1_450_000,
     poolCurrency: 'USD',
+    // NFT 持仓 mock 数据
+    nftPercentRealizedPnl: -10.2, // 负收益
+    nftCurrentValue: -0.102, // 1 * (-10.2) / 100
+    nftWinValue: 1.0, // 购买 1 美元
+    nftLastSynced: new Date().toISOString(),
   },
   {
     id: 'mock-3',
@@ -92,14 +102,14 @@ export const MOCK_MARKETS: PredictionMarket[] = [
         id: 'opt-teamA',
         text: 'Team A',
         externalProb: 0.55,
-        atypicaProb: 0.7,
+        atypicaProb: 0.85, // 85% - 绿色 bar
         isWinner: true,
       },
       {
         id: 'opt-field',
         text: 'Any other team',
         externalProb: 0.45,
-        atypicaProb: 0.3,
+        atypicaProb: 0.15,
         isWinner: false,
       },
     ],
@@ -112,6 +122,11 @@ export const MOCK_MARKETS: PredictionMarket[] = [
     viewCount: 16_432,
     poolAmount: 3_100_000,
     poolCurrency: 'USD',
+    // NFT 持仓 mock 数据
+    nftPercentRealizedPnl: 35.8, // 高收益
+    nftCurrentValue: 0.358, // 1 * 35.8 / 100
+    nftWinValue: 1.0, // 购买 1 美元
+    nftLastSynced: new Date().toISOString(),
   },
 ];
 

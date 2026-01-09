@@ -38,6 +38,12 @@ model Market {
   poolAmount  Float?
   poolCurrency String? @default("USD")
 
+  // NFT 持仓字段（来自 Polymarket 钱包）
+  nftPercentRealizedPnl Float?  // 收益率/赔率 (percentRealizedPnl)
+  nftCurrentValue       Float?  // 当前价值 (1 * percentRealizedPnl / 100)
+  nftWinValue           Float?  // Win value (totalBought)
+  nftLastSynced         DateTime? // 最后同步时间
+
   // 关联选项
   options     Option[]
 

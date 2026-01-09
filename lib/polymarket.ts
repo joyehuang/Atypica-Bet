@@ -4,7 +4,8 @@ import {
   PredictionMarket,
   PredictionOption,
   PredictionStatus,
-  Category
+  Category,
+  PolymarketPosition,
 } from '@/types';
 
 /**
@@ -183,4 +184,39 @@ export function extractSlugFromUrl(input: string): string {
   }
 
   return trimmed;
+}
+
+/**
+ * 获取钱包持仓（服务端调用）
+ */
+export async function fetchWalletPositions(): Promise<PolymarketPosition[]> {
+  const walletAddress = process.env.POLYMARKET_WALLET_ADDRESS;
+  
+  if (!walletAddress) {
+    throw new Error('钱包地址未配置，请在环境变量中设置 POLYMARKET_WALLET_ADDRESS');
+  }
+
+  const apiUrl = `https://data-api.polymarket.com/positions?user=${walletAddress}`;
+
+  try {
+    console.log('[Polymarket] 正在获取钱包持仓:', walletAddress);
+
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`获取持仓失败: ${response.status} ${response.statusText}`);
+    }
+
+    const positions: PolymarketPosition[] = await response.json();
+    console.log(`[Polymarket] 成功获取 ${positions.length} 个持仓`);
+    return positions;
+  } catch (error) {
+    console.error('[Polymarket] 获取持仓失败:', error);
+    throw error;
+  }
 }

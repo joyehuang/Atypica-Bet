@@ -39,6 +39,10 @@ export async function GET(request: NextRequest) {
       viewCount: market.viewCount,
       poolAmount: market.poolAmount ?? undefined,
       poolCurrency: market.poolCurrency ?? undefined,
+      nftPercentRealizedPnl: market.nftPercentRealizedPnl ?? undefined,
+      nftCurrentValue: market.nftCurrentValue ?? undefined,
+      nftWinValue: market.nftWinValue ?? undefined,
+      nftLastSynced: market.nftLastSynced?.toISOString(),
     }));
 
     return NextResponse.json(results);
@@ -117,6 +121,10 @@ export async function POST(request: NextRequest) {
       viewCount: savedMarket.viewCount,
       poolAmount: savedMarket.poolAmount ?? undefined,
       poolCurrency: savedMarket.poolCurrency ?? undefined,
+      nftPercentRealizedPnl: savedMarket.nftPercentRealizedPnl ?? undefined,
+      nftCurrentValue: savedMarket.nftCurrentValue ?? undefined,
+      nftWinValue: savedMarket.nftWinValue ?? undefined,
+      nftLastSynced: savedMarket.nftLastSynced?.toISOString(),
     };
 
     return NextResponse.json(result);

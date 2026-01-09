@@ -77,28 +77,49 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
   };
 
   const renderConfidenceIndicator = (probability: number) => {
-    // 高信心: 三个都是绿色 (>= 0.8)
-    // 中等信心: 两个绿色, 一个白色 (>= 0.6)
-    // 低信心: 一个绿色, 两个白色 (< 0.6)
-    const confidenceLevel = getConfidenceLevel(probability);
-    const levelMap = {
-      "High": 3,
-      "Medium": 2,
-      "Moderate": 1,
-      "Low": 1
-    };
-    const activeCount = levelMap[confidenceLevel] || 1;
+    // 根据概率值决定哪个 bar 高亮
+    // 0-40%: 红色高亮 (低置信度)
+    // 40-70%: 黄色高亮 (中置信度)
+    // 70-100%: 绿色高亮 (高置信度)
+    const percent = probability * 100;
+    let activeBar: 1 | 2 | 3 = 1; // 默认红色
+    
+    if (percent >= 70) {
+      activeBar = 3; // 绿色
+    } else if (percent >= 40) {
+      activeBar = 2; // 黄色
+    } else {
+      activeBar = 1; // 红色
+    }
 
     return (
       <div className="flex flex-col gap-1.5">
         <div className="text-xs font-semibold text-white/70 mb-0.5">Prediction confidence</div>
-        <div className="flex gap-1.5">
-          {[1, 2, 3].map((index) => (
-            <div
-              key={index}
-              className={`h-1.2 w-5 ${index <= activeCount ? 'bg-primary' : 'bg-white/20'}`}
-            />
-          ))}
+        <div className="flex gap-2 items-center">
+          {/* 红色 bar (低置信度) */}
+          <div
+            className={`h-2 w-10 rounded-sm transition-all ${
+              activeBar === 1 
+                ? 'bg-red-500 shadow-lg shadow-red-500/50' 
+                : 'bg-red-500/20'
+            }`}
+          />
+          {/* 黄色 bar (中置信度) */}
+          <div
+            className={`h-2 w-10 rounded-sm transition-all ${
+              activeBar === 2 
+                ? 'bg-yellow-500 shadow-lg shadow-yellow-500/50' 
+                : 'bg-yellow-500/20'
+            }`}
+          />
+          {/* 绿色 bar (高置信度) */}
+          <div
+            className={`h-2 w-10 rounded-sm transition-all ${
+              activeBar === 3 
+                ? 'bg-green-500 shadow-lg shadow-green-500/50' 
+                : 'bg-green-500/20'
+            }`}
+          />
         </div>
       </div>
     );
@@ -149,14 +170,44 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
       {/* Main Prediction Box */}
       {pickedOption && (
         <div className="mb-4 bg-white/[0.03] border border-white/10 rounded-xl p-4 card-layer-2">
-          <div className="flex flex-row justify-between items-start mb-2">
+          <div className="flex flex-row justify-between items-start mb-3">
             <div className="text-lg font-bold text-white">{pickedOption.text}</div>
           </div>
 
-          {pickedOption.atypicaProb !== undefined ?
-            renderConfidenceIndicator(pickedOption.atypicaProb) :
-            <div className="text-white">N/A</div>
-          }
+          <div className="space-y-3">
+            {/* Prediction confidence */}
+            {pickedOption.atypicaProb !== undefined ? (
+              renderConfidenceIndicator(pickedOption.atypicaProb)
+            ) : (
+              <div className="text-white">N/A</div>
+            )}
+
+            {/* NFT 持仓信息 */}
+            {market.nftCurrentValue !== undefined && market.nftPercentRealizedPnl !== undefined && market.nftWinValue !== undefined && (
+              <div className="pt-2 border-t border-white/10">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <div className="w-1 h-1 rounded-full bg-primary"></div>
+                  <div className="text-xs font-semibold text-white/70">NFT Position</div>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-gradient-to-br from-black/70 to-black/50 rounded-lg px-2.5 py-2 border border-white/20 hover:border-white/30 transition-all hover:scale-[1.02]">
+                    <div className="text-[9px] text-white/50 mb-1 font-medium">Value</div>
+                    <div className="text-xs text-white font-bold">${Math.abs(market.nftCurrentValue).toFixed(4)}</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-black/70 to-black/50 rounded-lg px-2.5 py-2 border border-white/20 hover:border-white/30 transition-all hover:scale-[1.02]">
+                    <div className="text-[9px] text-white/50 mb-1 font-medium">Odds</div>
+                    <div className={`text-xs font-bold ${market.nftPercentRealizedPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {market.nftPercentRealizedPnl >= 0 ? '+' : ''}{market.nftPercentRealizedPnl.toFixed(2)}%
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-black/70 to-black/50 rounded-lg px-2.5 py-2 border border-white/20 hover:border-white/30 transition-all hover:scale-[1.02]">
+                    <div className="text-[9px] text-white/50 mb-1 font-medium">Win</div>
+                    <div className="text-xs text-white font-bold">${market.nftWinValue.toFixed(2)}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

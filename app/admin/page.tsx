@@ -4,13 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { PredictionMarket, PredictionStatus } from '@/types';
 import { CATEGORY_LABELS, STATUS_LABELS } from '@/constants';
-import { Plus, Edit2, Trash2, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Edit2, Trash2, CheckCircle2, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 
 export default function AdminPage() {
   const router = useRouter();
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     loadMarkets();
@@ -63,6 +64,28 @@ export default function AdminPage() {
     }
   };
 
+  const handleSyncPositions = async () => {
+    if (!confirm('确定要同步钱包持仓吗？这将更新所有匹配市场的 NFT 数据。')) return;
+
+    setSyncing(true);
+    try {
+      const response = await fetch('/api/markets/sync-positions', {
+        method: 'POST',
+      });
+
+      if (!response.ok) throw new Error('同步失败');
+
+      const data = await response.json();
+      alert(`同步完成: 成功 ${data.synced} 个，失败 ${data.failed} 个`);
+      await loadMarkets();
+    } catch (error) {
+      console.error('Error syncing positions:', error);
+      alert('同步失败');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const getStatusColor = (status: PredictionStatus) => {
     switch(status) {
       case PredictionStatus.ACTIVE: return 'text-blue-400 bg-blue-500/10';
@@ -88,13 +111,23 @@ export default function AdminPage() {
           <h1 className="text-3xl font-black text-white">预测管理后台</h1>
           <p className="text-white/60 mt-1">管理、分析并结算预测市场</p>
         </div>
-        <button
-          onClick={() => router.push('/admin/create')}
-          className="bg-primary hover:bg-primary/90 text-black font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          创建预测
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleSyncPositions}
+            disabled={syncing}
+            className="bg-black/60 hover:bg-black/80 border border-white/20 text-white font-bold px-5 py-2.5 rounded-xl transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+            {syncing ? '同步中...' : '同步 NFT 持仓'}
+          </button>
+          <button
+            onClick={() => router.push('/admin/create')}
+            className="bg-primary hover:bg-primary/90 text-black font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center gap-2"
+          >
+            <Plus className="w-5 h-5" />
+            创建预测
+          </button>
+        </div>
       </div>
 
       <div className="glass-panel rounded-2xl overflow-hidden">
@@ -133,7 +166,10 @@ export default function AdminPage() {
                       >
                         {expandedId === m.id ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                       </button>
-                      <button className="p-2 text-white/40 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all">
+                      <button
+                        onClick={() => router.push(`/admin/${m.id}/edit`)}
+                        className="p-2 text-white/40 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all"
+                      >
                         <Edit2 className="w-5 h-5" />
                       </button>
                       <button
