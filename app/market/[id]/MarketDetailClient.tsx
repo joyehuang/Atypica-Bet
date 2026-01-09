@@ -132,7 +132,7 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
               {market.title}
             </h1>
             <p className="text-muted text-xl font-medium leading-relaxed">
-              {market.description}
+              {market.atypicaAnalysis}
             </p>
 
             <div className="flex items-center gap-6 pt-2">
@@ -213,25 +213,20 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
           </div>
 
           <div className="space-y-4">
-            {[
-              { id: 'overview', title: 'Contextual Matrix', content: market.description },
-              { id: 'reasoning', title: 'Logical Deduction', content: market.atypicaAnalysis || 'Computing...' },
-            ].map(section => (
-              <div key={section.id} className="glass-panel rounded-xl overflow-hidden">
-                <button
-                  onClick={() => setExpandedSection(expandedSection === section.id ? null : section.id)}
-                  className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
-                >
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white">{section.title}</span>
-                  {expandedSection === section.id ? <ChevronUp className="w-3.5 h-3.5 text-muted" /> : <ChevronDown className="w-3.5 h-3.5 text-muted" />}
-                </button>
-                {expandedSection === section.id && (
-                  <div className="px-6 pb-5 text-muted text-[12px] leading-relaxed">
-                    {section.content}
-                  </div>
-                )}
-              </div>
-            ))}
+            <div className="glass-panel rounded-xl overflow-hidden">
+              <button
+                onClick={() => setExpandedSection(expandedSection === 'overview' ? null : 'overview')}
+                className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
+              >
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white">Contextual Matrix</span>
+                {expandedSection === 'overview' ? <ChevronUp className="w-3.5 h-3.5 text-muted" /> : <ChevronDown className="w-3.5 h-3.5 text-muted" />}
+              </button>
+              {expandedSection === 'overview' && (
+                <div className="px-6 pb-5 text-muted text-[12px] leading-relaxed">
+                  {market.description}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="pt-6 border-t border-white/5 flex flex-wrap gap-3">

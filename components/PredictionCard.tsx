@@ -271,6 +271,22 @@ export const PredictionCard: React.FC<PredictionCardProps> = ({ market, onClick,
         </div>
 
         <div className="space-y-2 bg-white/[0.01] p-3 rounded-lg border border-white/5 card-layer-1">
+          {/* 显示整体概率 */}
+          {market.probability !== undefined && (
+            <div className="mb-3 pb-3 border-b border-white/10">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-white/60 font-medium">Market Probability</span>
+                <span className="text-sm font-bold text-primary">
+                  {Math.round(market.probability * 100)}%
+                </span>
+              </div>
+              <div className="text-[10px] text-white/40 mt-1">
+                (bestBid + bestAsk) / 2
+              </div>
+            </div>
+          )}
+
+          {/* 显示各选项概率 */}
           {market.options.map((option) => (
             <div key={option.id} className="flex items-center justify-between">
               <div className="flex items-center">

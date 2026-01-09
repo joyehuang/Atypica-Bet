@@ -41,6 +41,7 @@ export interface PredictionMarket {
   viewCount: number;
   poolAmount?: number; // 池子总金额
   poolCurrency?: string; // 货币类型，例如 "USD"
+  probability?: number;
   // NFT 持仓字段
   nftPercentRealizedPnl?: number; // 收益率/赔率
   nftCurrentValue?: number; // 当前价值

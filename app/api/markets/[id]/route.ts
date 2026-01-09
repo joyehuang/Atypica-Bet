@@ -13,12 +13,14 @@ export async function PATCH(
 
     const {
       atypicaPickId,
+      description,
       atypicaAnalysis,
       atypicaAnalysisUrl,
       accuracyScore,
       options,
     }: {
       atypicaPickId?: string;
+      description?: string;
       atypicaAnalysis?: string;
       atypicaAnalysisUrl?: string;
       accuracyScore?: number;
@@ -27,6 +29,7 @@ export async function PATCH(
 
     const updateData: any = {
       atypicaPickId,
+      description,
       atypicaAnalysis,
       atypicaAnalysisUrl,
       accuracyScore,
@@ -54,6 +57,7 @@ export async function PATCH(
     return NextResponse.json({
       id: updated.id,
       atypicaPickId: updated.atypicaPickId ?? undefined,
+      description: updated.description ?? undefined,
       atypicaAnalysis: updated.atypicaAnalysis ?? undefined,
       atypicaAnalysisUrl: updated.atypicaAnalysisUrl ?? undefined,
       accuracyScore: updated.accuracyScore ?? undefined,

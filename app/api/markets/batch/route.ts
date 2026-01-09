@@ -75,10 +75,11 @@ export async function POST(request: NextRequest) {
                     originalId: market.id,
                   }
                 : undefined,
-              viewCount: market.viewCount,
+              viewCount: market.probability !== undefined ? Math.round(market.probability * 10000) : 0,  // 存储 probability 到 viewCount
               shareCount: market.shareCount,
               poolAmount: market.poolAmount,
               poolCurrency: market.poolCurrency || 'USD',
+              
             },
             include: { options: true },
           });
@@ -128,7 +129,7 @@ export async function POST(request: NextRequest) {
                     originalId: market.id,
                   }
                 : undefined,
-              viewCount: market.viewCount,
+              viewCount: market.probability !== undefined ? Math.round(market.probability * 10000) : 0,  // 存储 probability 到 viewCount
               shareCount: market.shareCount,
               poolAmount: market.poolAmount,
               poolCurrency: market.poolCurrency || 'USD',

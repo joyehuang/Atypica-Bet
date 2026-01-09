@@ -14,6 +14,9 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
   const [atypicaPickId, setAtypicaPickId] = useState<string | undefined>(
     market.atypicaPickId
   );
+  const [description, setDescription] = useState<string>(
+    market.description || ''
+  );
   const [analysis, setAnalysis] = useState<string>(
     market.atypicaAnalysis || ''
   );
@@ -74,6 +77,7 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          description: description || undefined,
           atypicaPickId: atypicaPickId || undefined,
           atypicaAnalysis: analysis || undefined,
           atypicaAnalysisUrl: analysisUrl || undefined,
@@ -118,7 +122,7 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
       </div>
 
       <div className="glass-panel rounded-2xl p-6 md:p-8 space-y-8 border border-white/10">
-        {/* 市场基础信息（只读） */}
+        {/* 市场基础信息 */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-start">
           <div className="md:col-span-2 space-y-3">
             <h2 className="text-xs font-black text-white/60 tracking-[0.2em] uppercase">
@@ -132,10 +136,16 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
                 </div>
               </div>
               <div>
-                <div className="text-[11px] text-white/50 mb-1">描述</div>
-                <div className="text-white/80 whitespace-pre-wrap text-xs md:text-sm leading-relaxed bg-black/40 border border-white/20 rounded-xl px-3 py-2">
-                  {market.description}
-                </div>
+                <label className="text-[11px] text-white/50 mb-1 block">
+                  描述
+                </label>
+                <textarea
+                  rows={4}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full h-[300px] px-4 py-3 rounded-xl border border-white/20 bg-black/40 backdrop-blur-sm text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all resize-none leading-relaxed"
+                  placeholder="输入市场描述..."
+                />
               </div>
             </div>
           </div>

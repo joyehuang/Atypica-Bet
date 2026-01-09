@@ -149,6 +149,7 @@ export function convertSubMarketToPrediction(
     viewCount: 0,
     poolAmount: parseFloat(subMarket.volume) || undefined,
     poolCurrency: 'USD',
+    probability: probability
   };
 }
 
