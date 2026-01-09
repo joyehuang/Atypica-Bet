@@ -7,11 +7,16 @@ import {
   Category,
   PolymarketPosition,
 } from '@/types';
+import { setProxy } from './proxy';
 
 /**
  * 服务端调用 Polymarket API（直接调用外部 API）
  */
 export async function fetchMarketBySlug(slug: string): Promise<PolymarketEventGroup> {
+
+  await setProxy();
+
+  
   const apiUrl = `https://gamma-api.polymarket.com/events/slug/${slug}`;
 
   try {

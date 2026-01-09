@@ -5,13 +5,7 @@ import { PolymarketPosition } from '@/types';
 export async function GET(request: NextRequest) {
   try {
 
-    async function setProxy() {
-      if (process.env.PROXY_URL) {  // If you are in China, you must use this proxy:
-        const { setGlobalDispatcher, ProxyAgent } = await import("undici");
-        const proxyAgent = new ProxyAgent(process.env.PROXY_URL);
-        setGlobalDispatcher(proxyAgent);
-      }
-    }
+
 
 
     const walletAddress = process.env.POLYMARKET_WALLET_ADDRESS;
