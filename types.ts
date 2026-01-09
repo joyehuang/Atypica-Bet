@@ -34,6 +34,7 @@ export interface PredictionMarket {
   options: PredictionOption[];
   atypicaPickId?: string;
   atypicaAnalysis?: string;
+  atypicaAnalysisUrl?: string; // Atypica 分析报告链接
   accuracyScore?: number; // 0-1
   externalSource?: string;
   shareCount: number;

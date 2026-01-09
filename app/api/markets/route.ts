@@ -5,9 +5,40 @@ import { PredictionMarket, PredictionOption } from '@/types';
 // GET /api/markets - 获取所有市场
 export async function GET(request: NextRequest) {
   try {
+    // 暂时排除 NFT 字段，避免查询错误
     const markets = await prisma.market.findMany({
-      include: {
-        options: true,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        category: true,
+        status: true,
+        closeDate: true,
+        resolveDate: true,
+        createdAt: true,
+        updatedAt: true,
+        atypicaPickId: true,
+        atypicaAnalysis: true,
+        atypicaAnalysisUrl: true,
+        accuracyScore: true,
+        externalSource: true,
+        externalData: true,
+        viewCount: true,
+        shareCount: true,
+        poolAmount: true,
+        poolCurrency: true,
+        // 暂时排除 NFT 字段，等数据库同步后再添加
+        nftPercentRealizedPnl: true,
+        // nftLastSynced: true,
+        options: {
+          select: {
+            id: true,
+            text: true,
+            externalProb: true,
+            atypicaProb: true,
+            isWinner: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -24,7 +55,7 @@ export async function GET(request: NextRequest) {
       closeDate: market.closeDate.toISOString(),
       resolveDate: market.resolveDate?.toISOString(),
       status: market.status as any,
-      options: market.options.map(option => ({
+      options: market.options.map((option: { id: string; text: string; externalProb: number | null; atypicaProb: number | null; isWinner: boolean }) => ({
         id: option.id,
         text: option.text,
         externalProb: option.externalProb ?? undefined,
@@ -33,23 +64,45 @@ export async function GET(request: NextRequest) {
       })),
       atypicaPickId: market.atypicaPickId ?? undefined,
       atypicaAnalysis: market.atypicaAnalysis ?? undefined,
+      atypicaAnalysisUrl: market.atypicaAnalysisUrl ?? undefined,
       accuracyScore: market.accuracyScore ?? undefined,
       externalSource: market.externalSource ?? undefined,
       shareCount: market.shareCount,
       viewCount: market.viewCount,
       poolAmount: market.poolAmount ?? undefined,
       poolCurrency: market.poolCurrency ?? undefined,
-      nftPercentRealizedPnl: market.nftPercentRealizedPnl ?? undefined,
-      nftCurrentValue: market.nftCurrentValue ?? undefined,
-      nftWinValue: market.nftWinValue ?? undefined,
-      nftLastSynced: market.nftLastSynced?.toISOString(),
+      // 暂时排除 NFT 字段
+      // nftPercentRealizedPnl: market.nftPercentRealizedPnl ?? undefined,
+      // nftCurrentValue: market.nftCurrentValue ?? undefined,
+      // nftWinValue: market.nftWinValue ?? undefined,
+      // nftLastSynced: market.nftLastSynced?.toISOString(),
     }));
 
     return NextResponse.json(results);
   } catch (error) {
+    console.log('=== 详细错误信息 ===');
+    console.log('Full error:', JSON.stringify(error, null, 2));
+    console.log('Error meta:', JSON.stringify((error as any).meta, null, 2));
+    console.log('Error code:', (error as any).code);
+    console.log('Error message:', (error as any).message);
+    
+    // 尝试从 meta 中提取列名信息
+    const meta = (error as any).meta;
+    if (meta) {
+      console.log('Meta target:', meta.target);
+      console.log('Meta column:', meta.column);
+      console.log('Meta table:', meta.table);
+    }
+    
     console.error('获取市场失败:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : '获取市场失败' },
+      { 
+        error: error instanceof Error ? error.message : '获取市场失败',
+        details: process.env.NODE_ENV === 'development' ? {
+          code: (error as any).code,
+          meta: (error as any).meta,
+        } : undefined,
+      },
       { status: 500 }
     );
   }
@@ -71,12 +124,13 @@ export async function POST(request: NextRequest) {
         resolveDate: market.resolveDate ? new Date(market.resolveDate) : null,
         atypicaPickId: market.atypicaPickId,
         atypicaAnalysis: market.atypicaAnalysis,
+        atypicaAnalysisUrl: market.atypicaAnalysisUrl,
         accuracyScore: market.accuracyScore,
         externalSource: market.externalSource,
         externalData: market.externalSource ? {
           source: market.externalSource,
           originalId: market.id,
-        } : null,
+        } : undefined,
         viewCount: market.viewCount,
         shareCount: market.shareCount,
         poolAmount: market.poolAmount,
@@ -115,16 +169,18 @@ export async function POST(request: NextRequest) {
       })),
       atypicaPickId: savedMarket.atypicaPickId ?? undefined,
       atypicaAnalysis: savedMarket.atypicaAnalysis ?? undefined,
+      atypicaAnalysisUrl: savedMarket.atypicaAnalysisUrl ?? undefined,
       accuracyScore: savedMarket.accuracyScore ?? undefined,
       externalSource: savedMarket.externalSource ?? undefined,
       shareCount: savedMarket.shareCount,
       viewCount: savedMarket.viewCount,
       poolAmount: savedMarket.poolAmount ?? undefined,
       poolCurrency: savedMarket.poolCurrency ?? undefined,
-      nftPercentRealizedPnl: savedMarket.nftPercentRealizedPnl ?? undefined,
-      nftCurrentValue: savedMarket.nftCurrentValue ?? undefined,
-      nftWinValue: savedMarket.nftWinValue ?? undefined,
-      nftLastSynced: savedMarket.nftLastSynced?.toISOString(),
+      // 暂时排除 NFT 字段
+      // nftPercentRealizedPnl: savedMarket.nftPercentRealizedPnl ?? undefined,
+      // nftCurrentValue: savedMarket.nftCurrentValue ?? undefined,
+      // nftWinValue: savedMarket.nftWinValue ?? undefined,
+      // nftLastSynced: savedMarket.nftLastSynced?.toISOString(),
     };
 
     return NextResponse.json(result);

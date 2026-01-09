@@ -34,6 +34,7 @@ async function getMarkets(): Promise<PredictionMarket[]> {
       viewCount: market.viewCount || 0,
       poolAmount: market.poolAmount || undefined,
       poolCurrency: market.poolCurrency || undefined,
+      nftPercentRealizedPnl: market.nftPercentRealizedPnl || undefined
     }));
   } catch (error) {
     console.error('Failed to fetch markets:', error);

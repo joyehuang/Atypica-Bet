@@ -17,6 +17,9 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
   const [analysis, setAnalysis] = useState<string>(
     market.atypicaAnalysis || ''
   );
+  const [analysisUrl, setAnalysisUrl] = useState<string>(
+    market.atypicaAnalysisUrl || ''
+  );
   const [accuracyPercent, setAccuracyPercent] = useState<string>(
     market.accuracyScore != null
       ? String(Math.round(market.accuracyScore * 100))
@@ -73,6 +76,7 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
         body: JSON.stringify({
           atypicaPickId: atypicaPickId || undefined,
           atypicaAnalysis: analysis || undefined,
+          atypicaAnalysisUrl: analysisUrl || undefined,
           accuracyScore,
           options: optionsPayload,
         }),
@@ -201,6 +205,22 @@ export function MarketEditClient({ market }: MarketEditClientProps) {
                 placeholder="输入或粘贴 Atypica 的推理说明..."
                 className="w-full px-4 py-3 rounded-xl border border-white/20 bg-black/60 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all resize-none"
               />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-white/70">
+                Atypica 分析报告链接（Analysis Report URL）
+              </label>
+              <input
+                type="url"
+                value={analysisUrl}
+                onChange={(e) => setAnalysisUrl(e.target.value)}
+                placeholder="https://example.com/analysis-report"
+                className="w-full px-4 py-3 rounded-xl border border-white/20 bg-black/60 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all"
+              />
+              <p className="text-[10px] text-white/40">
+                输入 Atypica 分析报告的完整 URL 链接
+              </p>
             </div>
 
             <div className="space-y-2">
