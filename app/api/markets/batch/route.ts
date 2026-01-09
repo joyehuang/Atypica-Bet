@@ -11,6 +11,9 @@ interface BatchImportBody {
 
 // POST /api/markets/batch - 批量保存市场
 export async function POST(request: NextRequest) {
+   const x = await prisma.market.findMany();
+   console.log(x);
+
   try {
     const body = (await request.json()) as BatchImportBody;
 

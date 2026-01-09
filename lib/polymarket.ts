@@ -214,6 +214,7 @@ export async function fetchWalletPositions(): Promise<PolymarketPosition[]> {
     });
 
     if (!response.ok) {
+      console.log(await response.text())
       throw new Error(`获取持仓失败: ${response.status} ${response.statusText}`);
     }
 

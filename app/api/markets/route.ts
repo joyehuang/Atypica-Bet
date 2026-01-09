@@ -28,9 +28,7 @@ export async function GET(request: NextRequest) {
         poolAmount: true,
         poolCurrency: true,
         // 暂时排除 NFT 字段，等数据库同步后再添加
-        // nftPercentRealizedPnl: true,
-        // nftCurrentValue: true,
-        // nftWinValue: true,
+        nftPercentRealizedPnl: true,
         // nftLastSynced: true,
         options: {
           select: {

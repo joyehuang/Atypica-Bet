@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
         { status: 500 }
       );
     }
-
+    console.log(walletAddress);
     const apiUrl = `https://data-api.polymarket.com/positions?user=${walletAddress}`;
 
     const response = await fetch(apiUrl, {
