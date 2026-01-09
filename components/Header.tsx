@@ -1,0 +1,37 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { Menu } from 'lucide-react';
+import DiceHexagon from './DiceHexagon';
+
+export const Header: React.FC = () => {
+  return (
+    <header className="sticky top-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/5">
+      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-3 cursor-pointer group">
+          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center transition-all group-hover:rotate-12">
+            <DiceHexagon className="text-black w-5 h-5 fill-current" />
+          </div>
+          <span className="text-sm font-black tracking-tight text-white uppercase letter-spacing-tight">
+            Atypica <span className="text-muted">Bet</span>
+          </span>
+        </Link>
+
+        <nav className="hidden md:flex items-center gap-8">
+          <a href="#" className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors">Matrix</a>
+          <a href="#" className="text-[11px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors">Models</a>
+        </nav>
+
+        <div className="flex items-center gap-4">
+          <button className="btn-outline px-6 py-2 text-[11px] font-bold uppercase tracking-widest">
+            Connect
+          </button>
+          <button className="md:hidden p-2 text-white">
+            <Menu className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+};

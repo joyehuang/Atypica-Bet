@@ -1,0 +1,4 @@
+{
+  "/api/polymarket/events/slug/[slug]/route": "app/api/polymarket/events/slug/[slug]/route.js",
+  "/api/markets/batch/route": "app/api/markets/batch/route.js"
+}
